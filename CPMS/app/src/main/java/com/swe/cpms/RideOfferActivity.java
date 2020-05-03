@@ -1,24 +1,28 @@
 package com.swe.cpms;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
-import android.net.sip.SipSession;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.SearchView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -28,34 +32,125 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
-import java.util.Calendar;
+import org.apache.http.client.ClientProtocolException;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-public class RideOfferActivity extends FragmentActivity implements OnMapReadyCallback {
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.net.URL;
+import javax.net.ssl.HttpsURLConnection;
+
+public class RideOfferActivity<inner> extends FragmentActivity implements OnMapReadyCallback {
     Location currentLocation;
     FusedLocationProviderClient fusedLocationProviderClient;
 
-    private EditText mSource, mDestination, mDate, mTime, mSeats;
+    private EditText mDate, mTime, mSeats;
+    private SearchView mSource, mDestination;
     private Button mOffer;
+    private LatLng finalSource, finalDest;
+    Polyline polyline;
+
+    GoogleMap gmap;
+    SupportMapFragment mapFragment;
 
     private static final int REQUEST_CODE = 101;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ride_offer);
+
+        //to get current location
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         fetchLocation();
 
-        mSource = (EditText) findViewById(R.id.dSource);
-        mDestination = (EditText) findViewById(R.id.dDestination);
+        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.dMap);
+        mSource = (SearchView) findViewById(R.id.dSource);
+        mDestination = (SearchView) findViewById(R.id.dDestination);
         mDate = (EditText) findViewById(R.id.dDate);
         mTime = (EditText)  findViewById(R.id.dTime);
         mSeats = (EditText) findViewById(R.id.dSeats);
         mOffer = (Button) findViewById(R.id.offer);
+
+        //handling source search view
+        mSource.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                String srcLocation = mSource.getQuery().toString();
+                List<Address> addList=null;
+
+                if(srcLocation!=null || !srcLocation.equals("")){
+                    Geocoder geocoder = new Geocoder(RideOfferActivity.this);
+                    try{
+                        addList = geocoder.getFromLocationName(srcLocation, 5);
+                        while(addList.size()==0){
+                            addList = geocoder.getFromLocationName(srcLocation, 5);
+                        }
+                        Address src = addList.get(0);
+                        LatLng latlng = new LatLng(src.getLatitude(), src.getLongitude());
+                        finalSource = latlng;
+                        gmap.addMarker(new MarkerOptions().position(latlng).title(src.toString()));
+                        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 10));
+                    }catch (IOException e){
+                        e.printStackTrace();
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+        mapFragment.getMapAsync(RideOfferActivity.this);
+
+        //handling destination search view
+        mDestination.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                String destLocation = mDestination.getQuery().toString();
+                List<Address> addList=null;
+
+                if(destLocation!=null || !destLocation.equals("") ){
+                    Geocoder geocoder = new Geocoder(RideOfferActivity.this);
+                    try{
+                        addList = geocoder.getFromLocationName(destLocation, 5);
+                        while(addList.size()==0){
+                            addList = geocoder.getFromLocationName(destLocation, 5);
+                        }
+                        Address dest = addList.get(0);
+                        LatLng latlng = new LatLng(dest.getLatitude(), dest.getLongitude());
+                        finalDest = latlng;
+                        gmap.addMarker(new MarkerOptions().position(latlng).title(dest.toString()));
+                        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 10));
+                    }catch (IOException e){
+                        e.printStackTrace();
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+        mapFragment.getMapAsync(RideOfferActivity.this);
 
         Calendar calendar = Calendar.getInstance();
         final int day = calendar.get(Calendar.DAY_OF_MONTH);
@@ -97,29 +192,219 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
             }
         });
 
+        //handling post ride button
         mOffer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 addOfferDetailsToDb();
+                polylineLFunc();
             }
         });
     }
 
-    //wirtes it to db
+    //gets set of points between src and destination
+    private void polylineLFunc() {
+        String url= getUrl();
+        Log.d("url", url);
+        new connectAsyncTask(url).execute();
+    }
+
+    //used for polyline
+    private String getUrl() {
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+Double.toString(finalSource.latitude)+
+                        ","+Double.toString(finalSource.longitude)+"&destination="+Double.toString(finalDest.latitude)+","+
+                Double.toString(finalSource.longitude)+"&sensor=false&mode=driving&alternatives=true"+"&key="+"AIzaSyD8FgBc-daAlXsyyCTGJhcCOU7VN73GqoE";
+        return url;
+    }
+
+    //used for polyline
+    private class connectAsyncTask extends AsyncTask<Void, Void, String> {
+        private ProgressDialog progressDialog;
+        String url;
+
+        connectAsyncTask(String urlPass) {
+            url = urlPass;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // TODO Auto-generated method stub
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(RideOfferActivity.this);
+            progressDialog.setMessage("Fetching route, Please wait...");
+            progressDialog.setIndeterminate(true);
+            progressDialog.show();
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            JSONParser jParser = new JSONParser();
+            String json = jParser.getJSONFromUrl(url);
+
+            return json;
+
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            progressDialog.hide();
+            if (result != null) {
+                Log.d("path", "onPostExecute " + result);
+                drawPath(result);
+            }
+        }
+    }
+
+    //used for polyline
+    public class JSONParser {
+
+        InputStream is = null;
+        JSONObject jObj = null;
+        String json = "";
+
+        // constructor
+        public JSONParser() {
+        }
+
+        public String getJSONFromUrl(String url) {
+
+            // Making HTTP request
+            try {
+                // defaultHttpClient
+                Log.d("path", url);
+                Log.d("path", "http request");
+
+                URL myUrl = new URL(url);
+                HttpsURLConnection conn = null;
+                conn = (HttpsURLConnection)myUrl.openConnection();
+                InputStream is = conn.getInputStream();
+                InputStreamReader isr = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(isr);
+
+                String inputLine, data;
+                data="";
+                while ((inputLine = br.readLine()) != null) {
+                    System.out.println(inputLine);
+                    data+=inputLine;
+                }
+                Log.d("path", "doInBackground "+data);
+                br.close();
+                return data;
+
+//                DefaultHttpClient httpClient = new DefaultHttpClient();
+//                HttpPost httpPost = new HttpPost(url);
+//
+//                HttpResponse httpResponse = httpClient.execute(httpPost);
+//                HttpEntity httpEntity = httpResponse.getEntity();
+//                is = httpEntity.getContent();
+
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+////            try {
+////                BufferedReader reader = new BufferedReader(
+////                        new InputStreamReader(is, "iso-8859-1"), 8);
+////                StringBuilder sb = new StringBuilder();
+////                String line = null;
+////                while ((line = reader.readLine()) != null) {
+////                    sb.append(line + "\n");
+////                }
+////
+////                json = sb.toString();
+//                is.close();
+//            } catch (Exception e) {
+//                Log.e("Buffer Error", "Error converting result " + e.toString());
+//            }
+//            return json;
+            return "";
+        }
+    }
+
+    //used for polyline
+    public void drawPath(String result) {
+        Log.d("path", "drawpath");
+        if (polyline != null) {
+            gmap.clear();
+        }
+        gmap.addMarker(new MarkerOptions().position(finalSource).title("Sorce"));
+        gmap.addMarker(new MarkerOptions().position(finalDest).title("destination"));
+        try {
+            // Tranform the string into a json object
+            final JSONObject json = new JSONObject(result);
+            JSONArray routeArray = json.getJSONArray("routes");
+            JSONObject routes = routeArray.getJSONObject(0);
+            JSONObject overviewPolylines = routes
+                    .getJSONObject("overview_polyline");
+            String encodedString = overviewPolylines.getString("points");
+            List<LatLng> list = decodePoly(encodedString);
+
+            for (int z = 0; z < list.size() - 1; z++) {
+                LatLng src = list.get(z);
+                LatLng dest = list.get(z + 1);
+                polyline = gmap.addPolyline(new PolylineOptions()
+                        .add(new LatLng(src.latitude, src.longitude),
+                                new LatLng(dest.latitude, dest.longitude))
+                        .width(5).color(Color.BLUE).geodesic(true));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //used for polyline
+    private List<LatLng> decodePoly(String encoded) {
+        Log.d("path", "decodePoly");
+        List<LatLng> poly = new ArrayList<LatLng>();
+        int index = 0, len = encoded.length();
+        int lat = 0, lng = 0;
+
+        while (index < len) {
+            int b, shift = 0, result = 0;
+            do {
+                b = encoded.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lat += dlat;
+
+            shift = 0;
+            result = 0;
+            do {
+                b = encoded.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lng += dlng;
+
+            LatLng p = new LatLng((((double) lat / 1E5)),
+                    (((double) lng / 1E5)));
+            poly.add(p);
+        }
+
+        return poly;
+    }
+
+    //    wirtes it to db - incomplete
     private void addOfferDetailsToDb(){
-        final String src = mSource.getText().toString();
-        final String dest = mDestination.getText().toString();
         final String date = mDate.getText().toString();
         final String time = mTime.getText().toString();
         final String seats = mSeats.getText().toString();
 
-        if(TextUtils.isEmpty(src)){
-            Toast.makeText(this, "Enter ride start address", Toast.LENGTH_SHORT).show();
-        }
-        else if(TextUtils.isEmpty(dest)){
-            Toast.makeText(this, "Enter ride end address", Toast.LENGTH_SHORT).show();
-        }
-        else if(TextUtils.isEmpty(date)){
+//        if(TextUtils.isEmpty(src)){
+//            Toast.makeText(this, "Enter ride start address", Toast.LENGTH_SHORT).show();
+//        }
+//        else if(TextUtils.isEmpty(dest)){
+//            Toast.makeText(this, "Enter ride end address", Toast.LENGTH_SHORT).show();
+//        }
+        if(TextUtils.isEmpty(date)){
             Toast.makeText(this, "Enter date", Toast.LENGTH_SHORT).show();
         }
         else if(TextUtils.isEmpty(time)){
@@ -148,20 +433,23 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
                 if (location != null) {
                     currentLocation = location;
                     Toast.makeText(getApplicationContext(), currentLocation.getLatitude() + "" + currentLocation.getLongitude(), Toast.LENGTH_SHORT).show();
-                    SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-                    assert supportMapFragment != null;
-                    supportMapFragment.getMapAsync(RideOfferActivity.this);
+//                    SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+                    assert mapFragment != null;
+                    mapFragment.getMapAsync(RideOfferActivity.this);
                 }
             }
         });
     }
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-        MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("I am here!");
-        googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 5));
-        googleMap.addMarker(markerOptions);
+        gmap=googleMap;
+        if(currentLocation!=null) {
+            LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+            MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("I am here!");
+            googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 5));
+            googleMap.addMarker(markerOptions);
+        }
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
