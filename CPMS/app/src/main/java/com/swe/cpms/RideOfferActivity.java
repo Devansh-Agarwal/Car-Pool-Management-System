@@ -26,6 +26,7 @@ import android.widget.SearchView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -39,6 +40,11 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
@@ -50,6 +56,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.net.URL;
@@ -60,7 +67,9 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
     FusedLocationProviderClient fusedLocationProviderClient;
 
     private EditText mDate, mTime, mSeats;
-    private SearchView mSource, mDestination;
+//    private SearchView mSource, mDestination;
+    private AutocompleteSupportFragment mSource;
+    private AutocompleteSupportFragment mDestination;
     private Button mOffer;
     private LatLng finalSource, finalDest;
     Polyline polyline;
@@ -79,78 +88,59 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
         fetchLocation();
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.dMap);
-        mSource = (SearchView) findViewById(R.id.dSource);
-        mDestination = (SearchView) findViewById(R.id.dDestination);
+        mSource = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.dSource);
+        mDestination = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.dDestination);
+
+//        mSource = (SearchView) findViewById(R.id.dSource);
+//        mDestination = (SearchView) findViewById(R.id.dDestination);
         mDate = (EditText) findViewById(R.id.dDate);
         mTime = (EditText)  findViewById(R.id.dTime);
         mSeats = (EditText) findViewById(R.id.dSeats);
         mOffer = (Button) findViewById(R.id.offer);
 
-        //handling source search view
-        mSource.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                String srcLocation = mSource.getQuery().toString();
-                List<Address> addList=null;
+        if(!Places.isInitialized()){
+            Places.initialize(getApplicationContext(), getString(R.string.google_api_key));
+        }
 
-                if(srcLocation!=null || !srcLocation.equals("")){
-                    Geocoder geocoder = new Geocoder(RideOfferActivity.this);
-                    try{
-                        addList = geocoder.getFromLocationName(srcLocation, 5);
-                        while(addList.size()==0){
-                            addList = geocoder.getFromLocationName(srcLocation, 5);
-                        }
-                        Address src = addList.get(0);
-                        LatLng latlng = new LatLng(src.getLatitude(), src.getLongitude());
-                        finalSource = latlng;
-                        gmap.addMarker(new MarkerOptions().position(latlng).title(src.toString()));
-                        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 10));
-                    }catch (IOException e){
-                        e.printStackTrace();
-                    }
-                }
-                return false;
+        PlacesClient placesClient = Places.createClient(this);
+
+        mSource.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
+        mSource.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
+                LatLng latlng = place.getLatLng();
+                finalSource = latlng;
+
+                gmap.addMarker(new MarkerOptions().position(finalSource).title("Source"));
+                gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 10));
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
+            public void onError(@NonNull Status status) {
+
             }
         });
-        mapFragment.getMapAsync(RideOfferActivity.this);
 
-        //handling destination search view
-        mDestination.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        mDestination.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
+        mDestination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                String destLocation = mDestination.getQuery().toString();
-                List<Address> addList=null;
+            public void onPlaceSelected(@NonNull Place place) {
+                LatLng latlng = place.getLatLng();
+                finalDest = latlng;
 
-                if(destLocation!=null || !destLocation.equals("") ){
-                    Geocoder geocoder = new Geocoder(RideOfferActivity.this);
-                    try{
-                        addList = geocoder.getFromLocationName(destLocation, 5);
-                        while(addList.size()==0){
-                            addList = geocoder.getFromLocationName(destLocation, 5);
-                        }
-                        Address dest = addList.get(0);
-                        LatLng latlng = new LatLng(dest.getLatitude(), dest.getLongitude());
-                        finalDest = latlng;
-                        gmap.addMarker(new MarkerOptions().position(latlng).title(dest.toString()));
-                        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 10));
-                    }catch (IOException e){
-                        e.printStackTrace();
-                    }
-                }
-                return false;
+                gmap.addMarker(new MarkerOptions().position(finalDest).title("Destination"));
+                gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 10));
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
+            public void onError(@NonNull Status status) {
+
             }
         });
-        mapFragment.getMapAsync(RideOfferActivity.this);
+
+        if(gmap!=null){
+            gmap.addMarker(new MarkerOptions().position(finalDest).title("Destination"));
+        }
 
         Calendar calendar = Calendar.getInstance();
         final int day = calendar.get(Calendar.DAY_OF_MONTH);
@@ -192,10 +182,16 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
             }
         });
 
-        //handling post ride button
+//        handling post ride button
         mOffer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                Log.d("mappath", "OnClick");
+//                gmap.addMarker(new MarkerOptions().position(finalSource).title("Source"));
+//                mapFragment.getMapAsync(RideOfferActivity.this);
+//                gmap.addMarker(new MarkerOptions().position(finalDest).title("destination"));
+//                mapFragment.getMapAsync(RideOfferActivity.this);
+
                 addOfferDetailsToDb();
                 polylineLFunc();
             }
@@ -204,6 +200,13 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
 
     //gets set of points between src and destination
     private void polylineLFunc() {
+        //to debug
+//        LatLng latlng = new LatLng(13.03, 77.6);
+//        finalSource = latlng;
+//
+//        latlng = new LatLng(13.0, 77.0);
+//        finalDest = latlng;
+
         String url= getUrl();
         Log.d("url", url);
         new connectAsyncTask(url).execute();
@@ -327,11 +330,11 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
 
     //used for polyline
     public void drawPath(String result) {
-        Log.d("path", "drawpath");
+        Log.d("drawpath input", result);
         if (polyline != null) {
             gmap.clear();
         }
-        gmap.addMarker(new MarkerOptions().position(finalSource).title("Sorce"));
+        gmap.addMarker(new MarkerOptions().position(finalSource).title("Source"));
         gmap.addMarker(new MarkerOptions().position(finalDest).title("destination"));
         try {
             // Tranform the string into a json object
@@ -389,6 +392,9 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
             poly.add(p);
         }
 
+        for(int i=0;i<poly.size();i++){
+            Log.d("latlng vals", String.valueOf((poly.get(i).latitude)));
+        }
         return poly;
     }
 
