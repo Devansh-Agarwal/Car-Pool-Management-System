@@ -213,7 +213,7 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
     private String getUrl() {
         String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+Double.toString(finalSource.latitude)+
                         ","+Double.toString(finalSource.longitude)+"&destination="+Double.toString(finalDest.latitude)+","+
-                Double.toString(finalSource.longitude)+"&sensor=false&mode=driving&alternatives=true"+"&key="+getString(R.string.gMapKey);
+                Double.toString(finalSource.longitude)+"&sensor=false&mode=driving&alternatives=true"+"&key="+getString(R.string.google_api_key);
         return url;
     }
 
