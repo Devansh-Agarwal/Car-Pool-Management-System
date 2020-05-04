@@ -27,6 +27,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.common.internal.Asserts;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -67,7 +68,6 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
     FusedLocationProviderClient fusedLocationProviderClient;
 
     private EditText mDate, mTime, mSeats;
-//    private SearchView mSource, mDestination;
     private AutocompleteSupportFragment mSource;
     private AutocompleteSupportFragment mDestination;
     private Button mOffer;
@@ -90,9 +90,6 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.dMap);
         mSource = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.dSource);
         mDestination = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.dDestination);
-
-//        mSource = (SearchView) findViewById(R.id.dSource);
-//        mDestination = (SearchView) findViewById(R.id.dDestination);
         mDate = (EditText) findViewById(R.id.dDate);
         mTime = (EditText)  findViewById(R.id.dTime);
         mSeats = (EditText) findViewById(R.id.dSeats);
@@ -102,15 +99,12 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
             Places.initialize(getApplicationContext(), getString(R.string.google_api_key));
         }
 
-        PlacesClient placesClient = Places.createClient(this);
-
         mSource.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
         mSource.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(@NonNull Place place) {
                 LatLng latlng = place.getLatLng();
                 finalSource = latlng;
-
                 gmap.addMarker(new MarkerOptions().position(finalSource).title("Source"));
                 gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 10));
             }
@@ -127,20 +121,14 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
             public void onPlaceSelected(@NonNull Place place) {
                 LatLng latlng = place.getLatLng();
                 finalDest = latlng;
-
                 gmap.addMarker(new MarkerOptions().position(finalDest).title("Destination"));
-                gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 10));
+                gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(finalDest, 10));
             }
-
             @Override
             public void onError(@NonNull Status status) {
 
             }
         });
-
-        if(gmap!=null){
-            gmap.addMarker(new MarkerOptions().position(finalDest).title("Destination"));
-        }
 
         Calendar calendar = Calendar.getInstance();
         final int day = calendar.get(Calendar.DAY_OF_MONTH);
@@ -186,12 +174,6 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
         mOffer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Log.d("mappath", "OnClick");
-//                gmap.addMarker(new MarkerOptions().position(finalSource).title("Source"));
-//                mapFragment.getMapAsync(RideOfferActivity.this);
-//                gmap.addMarker(new MarkerOptions().position(finalDest).title("destination"));
-//                mapFragment.getMapAsync(RideOfferActivity.this);
-
                 addOfferDetailsToDb();
                 polylineLFunc();
             }
@@ -200,15 +182,7 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
 
     //gets set of points between src and destination
     private void polylineLFunc() {
-        //to debug
-//        LatLng latlng = new LatLng(13.03, 77.6);
-//        finalSource = latlng;
-//
-//        latlng = new LatLng(13.0, 77.0);
-//        finalDest = latlng;
-
         String url= getUrl();
-        Log.d("url", url);
         new connectAsyncTask(url).execute();
     }
 
@@ -216,7 +190,7 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
     private String getUrl() {
         String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+Double.toString(finalSource.latitude)+
                         ","+Double.toString(finalSource.longitude)+"&destination="+Double.toString(finalDest.latitude)+","+
-                Double.toString(finalSource.longitude)+"&sensor=false&mode=driving&alternatives=true"+"&key="+getString(R.string.google_api_key);
+                Double.toString(finalDest.longitude)+"&sensor=false&mode=driving&alternatives=true"+"&key="+getString(R.string.google_api_key);
         return url;
     }
 
@@ -253,7 +227,6 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
             super.onPostExecute(result);
             progressDialog.hide();
             if (result != null) {
-                Log.d("path", "onPostExecute " + result);
                 drawPath(result);
             }
         }
@@ -275,9 +248,6 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
             // Making HTTP request
             try {
                 // defaultHttpClient
-                Log.d("path", url);
-                Log.d("path", "http request");
-
                 URL myUrl = new URL(url);
                 HttpsURLConnection conn = null;
                 conn = (HttpsURLConnection)myUrl.openConnection();
@@ -291,7 +261,6 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
                     System.out.println(inputLine);
                     data+=inputLine;
                 }
-                Log.d("path", "doInBackground "+data);
                 br.close();
                 return data;
 
@@ -330,12 +299,15 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
 
     //used for polyline
     public void drawPath(String result) {
-        Log.d("drawpath input", result);
         if (polyline != null) {
             gmap.clear();
         }
         gmap.addMarker(new MarkerOptions().position(finalSource).title("Source"));
+        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(finalSource, 10));
+
         gmap.addMarker(new MarkerOptions().position(finalDest).title("destination"));
+        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(finalDest, 10));
+
         try {
             // Tranform the string into a json object
             final JSONObject json = new JSONObject(result);
@@ -346,14 +318,18 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
             String encodedString = overviewPolylines.getString("points");
             List<LatLng> list = decodePoly(encodedString);
 
-            for (int z = 0; z < list.size() - 1; z++) {
-                LatLng src = list.get(z);
-                LatLng dest = list.get(z + 1);
-                polyline = gmap.addPolyline(new PolylineOptions()
-                        .add(new LatLng(src.latitude, src.longitude),
-                                new LatLng(dest.latitude, dest.longitude))
-                        .width(5).color(Color.BLUE).geodesic(true));
+            PolylineOptions options = new PolylineOptions().width(5).color(Color.BLUE).geodesic(true);
+            for (int z = 0; z < list.size() ; z++) {
+//                LatLng src = list.get(z);
+//                LatLng dest = list.get(z + 1);
+//                polyline = gmap.addPolyline(new PolylineOptions()
+//                        .add(new LatLng(src.latitude, src.longitude),
+//                                new LatLng(dest.latitude, dest.longitude))
+//                        .width(5).color(Color.BLUE).geodesic(true));
+                LatLng point = list.get(z);
+                options.add(point);
             }
+            polyline = gmap.addPolyline(options);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -362,7 +338,6 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
 
     //used for polyline
     private List<LatLng> decodePoly(String encoded) {
-        Log.d("path", "decodePoly");
         List<LatLng> poly = new ArrayList<LatLng>();
         int index = 0, len = encoded.length();
         int lat = 0, lng = 0;
@@ -392,9 +367,6 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
             poly.add(p);
         }
 
-        for(int i=0;i<poly.size();i++){
-            Log.d("latlng vals", String.valueOf((poly.get(i).latitude)));
-        }
         return poly;
     }
 
