@@ -31,9 +31,9 @@ public class AskPhoneNumber extends AppCompatActivity {
 
         if (user != null) {// This will automatically take the signed in users to the dashboard
             // User is signed in
-            String name=user.getDisplayName(),email=user.getEmail();
+            //String name=user.getDisplayName(),email=user.getEmail();
 
-            if(name.equals("")||email.equals("")) // profile has not been made yet
+            if(user.getDisplayName()!=null&&user.getEmail()!=null) // profile has not been made yet
             {
                 Intent intent = new Intent(AskPhoneNumber.this, MakeProfile.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

@@ -145,14 +145,16 @@ public class VerifyPhone extends AppCompatActivity {
 
                             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                             if (user != null) {// This will automatically take the signed in users to the dashboard
-                                String name=user.getDisplayName(),email=user.getEmail();
-                                if(name.equals("")||email.equals("")) // First time user
+                               // String name=user.getDisplayName(),email=user.getEmail();
+                                if(user.getEmail()==null||user.getDisplayName()==null) // First time user
                                 {
+                                    Log.i("loopDebug", "onComplete: "+"firstTimeUser");
                                     Intent intent = new Intent(VerifyPhone.this, MakeProfile.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(intent);
                                 }
                                 else { // Old user
+                                    Log.i("loopDebug", "onComplete: "+"oldUser");
                                     Intent intent = new Intent(VerifyPhone.this, MainActivity.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(intent);
