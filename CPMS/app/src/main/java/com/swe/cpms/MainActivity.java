@@ -1,23 +1,33 @@
 package com.swe.cpms;
 
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
-    private Button mDriver, mRider;
+    private Button mDriver, mRider,mLogout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         System.out.println("in main act\n");
 
         mRider = (Button) findViewById(R.id.Rider);
         mDriver = (Button) findViewById(R.id.Driver);
+        mLogout=(Button) findViewById(R.id.log_out);
 
         mRider.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -38,5 +48,17 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         });
+        mLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(MainActivity.this, AskPhoneNumber.class);
+                startActivity(intent);
+                finish();
+                return;
+            }
+        });
     }
+
+
 }
