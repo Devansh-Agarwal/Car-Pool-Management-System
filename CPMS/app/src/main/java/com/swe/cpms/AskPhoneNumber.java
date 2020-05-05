@@ -33,14 +33,14 @@ public class AskPhoneNumber extends AppCompatActivity {
             // User is signed in
             //String name=user.getDisplayName(),email=user.getEmail();
 
-            if(user.getDisplayName()!=null&&user.getEmail()!=null) // profile has not been made yet
+            if(user.getDisplayName()!=null&&user.getEmail()!=null) // profile has already been made
             {
-                Intent intent = new Intent(AskPhoneNumber.this, MakeProfile.class);
+                Intent intent = new Intent(AskPhoneNumber.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }
-            else { // profile has been made
-                Intent intent = new Intent(AskPhoneNumber.this, MainActivity.class);
+            else { // profile has not been made
+                Intent intent = new Intent(AskPhoneNumber.this, MakeProfile.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }
