@@ -1,14 +1,34 @@
 package com.swe.cpms;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.List;
+import java.util.Map;
+
 
 public class FetchedRidesActivity extends AppCompatActivity {
 
@@ -18,7 +38,21 @@ public class FetchedRidesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fetched_rides);
-
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference  colRef = db.collection("OfferedRides");
+        colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    QuerySnapshot coll = task.getResult();
+                    List<DocumentSnapshot> rides= coll.getDocuments();
+                }
+                else{
+                    Toast.makeText(FetchedRidesActivity.this,"Collection query failed",Toast.LENGTH_SHORT).show();
+                    Log.d("hakuna", "Collection query failed");
+                }
+            }
+        });
         myLinearLayout = (LinearLayout) findViewById(R.id.frame);
         final int N = 20; // total number of textviews to add
 
