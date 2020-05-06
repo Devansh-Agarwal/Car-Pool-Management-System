@@ -20,6 +20,7 @@
         <activity android:name=".ViewProfile"></activity>
         <activity android:name=".MakeProfile" />
         <activity android:name=".FetchedRidesActivity"></activity>
+        <activity android:name=".MyRides"></activity>
         <activity android:name=".VerifyPhone" />
         <activity android:name=".MainActivity" />
         <activity android:name=".RideOfferActivity" />
