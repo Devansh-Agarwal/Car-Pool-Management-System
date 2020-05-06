@@ -46,6 +46,7 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.maps.android.PolyUtil;
 
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
@@ -283,14 +284,6 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
                 }
                 br.close();
                 return data;
-
-//                DefaultHttpClient httpClient = new DefaultHttpClient();
-//                HttpPost httpPost = new HttpPost(url);
-//
-//                HttpResponse httpResponse = httpClient.execute(httpPost);
-//                HttpEntity httpEntity = httpResponse.getEntity();
-//                is = httpEntity.getContent();
-
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             } catch (ClientProtocolException e) {
@@ -298,21 +291,6 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
             } catch (IOException e) {
                 e.printStackTrace();
             }
-////            try {
-////                BufferedReader reader = new BufferedReader(
-////                        new InputStreamReader(is, "iso-8859-1"), 8);
-////                StringBuilder sb = new StringBuilder();
-////                String line = null;
-////                while ((line = reader.readLine()) != null) {
-////                    sb.append(line + "\n");
-////                }
-////
-////                json = sb.toString();
-//                is.close();
-//            } catch (Exception e) {
-//                Log.e("Buffer Error", "Error converting result " + e.toString());
-//            }
-//            return json;
             return "";
         }
     }
@@ -351,6 +329,20 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
                 options.add(point);
             }
             polyline = gmap.addPolyline(options);
+
+            for (int z = 0; z < list.size() ; z++) {
+//                LatLng src = list.get(z);
+//                LatLng dest = list.get(z + 1);
+//                polyline = gmap.addPolyline(new PolylineOptions()
+//                        .add(new LatLng(src.latitude, src.longitude),
+//                                new LatLng(dest.latitude, dest.longitude))
+//                        .width(5).color(Color.BLUE).geodesic(true));
+                LatLng point = list.get(z);
+                boolean ans = PolyUtil.isLocationOnEdge(point, list, true);
+                if(ans){
+                    Log.d("isLoc", Double.toString(z));
+                }
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
