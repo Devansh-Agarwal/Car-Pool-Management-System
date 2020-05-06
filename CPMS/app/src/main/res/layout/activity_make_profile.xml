@@ -78,7 +78,11 @@ android:orientation="vertical">
     android:layout_height="wrap_content"
     android:text="Submit"
     android:id="@+id/submit_profile"/>
-
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:id="@+id/cancel_update_profile"/>
 
 
 </LinearLayout>

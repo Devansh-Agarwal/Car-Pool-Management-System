@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class MakeProfile extends AppCompatActivity {
     EditText name,email,e_age,e_dl_no,e_v_no ;
-    Button btn;
+    Button btn,btn_cancel;
     RadioButton genderradioButton;
     RadioGroup radioGroup;
     @Override
@@ -44,7 +44,15 @@ public class MakeProfile extends AppCompatActivity {
         e_v_no=(EditText) findViewById(R.id.vehicle_no);
         radioGroup=(RadioGroup)findViewById(R.id.radioGroup);
         btn = (Button) findViewById(R.id.submit_profile);
-
+        btn_cancel=(Button) findViewById(R.id.cancel_update_profile);
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MakeProfile.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
         btn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
@@ -134,23 +142,24 @@ public class MakeProfile extends AppCompatActivity {
 
 // Add a new document with a generated ID
                 db.collection("users")
-                        .add(user)
-                        .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        .document(user_auth.getUid())
+                        .set(user)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
-                            public void onSuccess(DocumentReference documentReference) {
+                            public void onSuccess(Void aVoid) {
+                                Log.d("hakuna", "DocumentSnapshot successfully written!");
                                 Toast.makeText(MakeProfile.this,"Profile sucessfully stored in database", Toast.LENGTH_SHORT).show();
-                                Log.d("hakuna", "DocumentSnapshot added with ID: " + documentReference.getId());
                             }
                         })
                         .addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
+                                Log.w("hakuna", "Error writing document", e);
                                 Toast.makeText(MakeProfile.this,"Profile storage unsucessful", Toast.LENGTH_SHORT).show();
-                                Log.w("hakuna", "Error adding document", e);
                             }
                         });
-            }
-        });
+        };
+    });
     }
 
     protected  void emailVerification()

@@ -21,6 +21,12 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="View Profile"
+        android:id="@+id/view_profile"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:text="Log Out"
         android:id="@+id/log_out"/>
 </LinearLayout>
