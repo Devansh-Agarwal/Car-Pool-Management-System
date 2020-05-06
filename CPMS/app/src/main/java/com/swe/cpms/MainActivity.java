@@ -15,7 +15,7 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
-    private Button mDriver, mRider,mLogout;
+    private Button mDriver, mRider,mLogout,mView_profile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,14 +28,15 @@ public class MainActivity extends AppCompatActivity {
         mRider = (Button) findViewById(R.id.Rider);
         mDriver = (Button) findViewById(R.id.Driver);
         mLogout=(Button) findViewById(R.id.log_out);
+        mView_profile=(Button) findViewById(R.id.view_profile);
 
         mRider.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, RideRequestActivity.class);
                 startActivity(intent);
-                finish();
-                return;
+                //finish();
+                //return;
             }
         });
 
@@ -44,8 +45,17 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, RideOfferActivity.class);
                 startActivity(intent);
-                finish();
-                return;
+//                finish();
+//                return;
+            }
+        });
+        mView_profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ViewProfile.class);
+                startActivity(intent);
+//                finish();
+//                return;
             }
         });
         mLogout.setOnClickListener(new View.OnClickListener() {
@@ -53,9 +63,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 FirebaseAuth.getInstance().signOut();
                 Intent intent = new Intent(MainActivity.this, AskPhoneNumber.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
-                finish();
-                return;
             }
         });
     }
