@@ -7,22 +7,6 @@
     tools:context=".RideOfferActivity"
     android:orientation="vertical">
 
-<!--    <SearchView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_gravity="bottom"-->
-<!--        android:id="@+id/dSource"-->
-<!--        android:queryHint="Start address"-->
-<!--        android:iconifiedByDefault="false"-->
-<!--        />-->
-
-<!--    <SearchView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_gravity="bottom"-->
-<!--        android:id="@+id/dDestination"-->
-<!--        android:queryHint="End address"-->
-<!--        android:iconifiedByDefault="false"/>-->
     <fragment
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

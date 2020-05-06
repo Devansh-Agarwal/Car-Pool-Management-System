@@ -63,7 +63,7 @@ import java.util.List;
 import java.net.URL;
 import javax.net.ssl.HttpsURLConnection;
 
-public class RideOfferActivity<inner> extends FragmentActivity implements OnMapReadyCallback {
+public class RideOfferActivity extends FragmentActivity implements OnMapReadyCallback {
     Location currentLocation;
     FusedLocationProviderClient fusedLocationProviderClient;
 
@@ -71,7 +71,7 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
     private AutocompleteSupportFragment mSource;
     private AutocompleteSupportFragment mDestination;
     private Button mOffer;
-    private LatLng finalSource, finalDest;
+    private LatLng finalSource=null, finalDest=null;
     Polyline polyline;
 
     GoogleMap gmap;
@@ -111,7 +111,7 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
 
             @Override
             public void onError(@NonNull Status status) {
-
+                Toast.makeText(RideOfferActivity.this, "select start address", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -126,7 +126,7 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
             }
             @Override
             public void onError(@NonNull Status status) {
-
+                Toast.makeText(RideOfferActivity.this, "select end address", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -174,8 +174,29 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
         mOffer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addOfferDetailsToDb();
-                polylineLFunc();
+                final String date = mDate.getText().toString();
+                final String time = mTime.getText().toString();
+                final String seats = mSeats.getText().toString();
+
+                if(finalSource==null){
+                    Toast.makeText(RideOfferActivity.this, "Enter start address", Toast.LENGTH_SHORT).show();
+                }
+                else if(finalDest==null){
+                    Toast.makeText(RideOfferActivity.this, "Enter end address", Toast.LENGTH_SHORT).show();
+                }
+                else if(TextUtils.isEmpty(date)){
+                    Toast.makeText(RideOfferActivity.this, "Enter date", Toast.LENGTH_SHORT).show();
+                }
+                else if(TextUtils.isEmpty(time)){
+                    Toast.makeText(RideOfferActivity.this, "Enter time", Toast.LENGTH_SHORT).show();
+                }
+                else if(TextUtils.isEmpty(seats)){
+                    Toast.makeText(RideOfferActivity.this, "Enter the number of seats", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    addOfferDetailsToDb();
+                    polylineLFunc();
+                }
             }
         });
     }
@@ -217,7 +238,6 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
         protected String doInBackground(Void... params) {
             JSONParser jParser = new JSONParser();
             String json = jParser.getJSONFromUrl(url);
-
             return json;
 
         }
@@ -315,6 +335,7 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
             JSONObject routes = routeArray.getJSONObject(0);
             JSONObject overviewPolylines = routes
                     .getJSONObject("overview_polyline");
+
             String encodedString = overviewPolylines.getString("points");
             List<LatLng> list = decodePoly(encodedString);
 
@@ -372,28 +393,7 @@ public class RideOfferActivity<inner> extends FragmentActivity implements OnMapR
 
     //    wirtes it to db - incomplete
     private void addOfferDetailsToDb(){
-        final String date = mDate.getText().toString();
-        final String time = mTime.getText().toString();
-        final String seats = mSeats.getText().toString();
-
-//        if(TextUtils.isEmpty(src)){
-//            Toast.makeText(this, "Enter ride start address", Toast.LENGTH_SHORT).show();
-//        }
-//        else if(TextUtils.isEmpty(dest)){
-//            Toast.makeText(this, "Enter ride end address", Toast.LENGTH_SHORT).show();
-//        }
-        if(TextUtils.isEmpty(date)){
-            Toast.makeText(this, "Enter date", Toast.LENGTH_SHORT).show();
-        }
-        else if(TextUtils.isEmpty(time)){
-            Toast.makeText(this, "Enter time", Toast.LENGTH_SHORT).show();
-        }
-        else if(TextUtils.isEmpty(seats)){
-            Toast.makeText(this, "Enter the number of seats", Toast.LENGTH_SHORT).show();
-        }
-        else{
 //            write it to database
-        }
     }
 
     //to get current location
