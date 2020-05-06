@@ -158,6 +158,9 @@ public class MakeProfile extends AppCompatActivity {
                                 Toast.makeText(MakeProfile.this,"Profile storage unsucessful", Toast.LENGTH_SHORT).show();
                             }
                         });
+                Intent intent = new Intent(MakeProfile.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
         };
     });
     }
