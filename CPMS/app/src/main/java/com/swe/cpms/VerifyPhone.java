@@ -150,6 +150,8 @@ public class VerifyPhone extends AppCompatActivity {
                                 {
                                     Log.i("loopDebug", "onComplete: "+"firstTimeUser");
                                     Intent intent = new Intent(VerifyPhone.this, MakeProfile.class);
+//                                    Intent intent = new Intent(AskPhoneNumber.this, VerifyPhone.class);
+                                    intent.putExtra("Flag_check", "Sign_Up");
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(intent);
                                 }

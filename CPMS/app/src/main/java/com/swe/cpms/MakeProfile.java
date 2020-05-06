@@ -37,6 +37,13 @@ public class MakeProfile extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_make_profile);
+
+        Intent intent = getIntent();
+        String Flag_check = intent.getStringExtra("Flag_check");
+        TextView textView = (TextView) findViewById(R.id.view_Flag_check);
+        textView.setText(Flag_check);
+
+
         name = (EditText) findViewById(R.id.name);
         email = (EditText) findViewById(R.id.email);
         e_age=(EditText) findViewById(R.id.age);
