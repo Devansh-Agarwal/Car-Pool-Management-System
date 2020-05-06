@@ -17,4 +17,10 @@
         android:layout_height="wrap_content"
         android:text="Offer Ride"
         android:id="@+id/Driver"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Log Out"
+        android:id="@+id/log_out"/>
 </LinearLayout>
