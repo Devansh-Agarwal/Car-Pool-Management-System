@@ -254,7 +254,7 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
     }
 
     //used for polyline
-    public class JSONParser {
+    public static class JSONParser {
 
         InputStream is = null;
         JSONObject jObj = null;
