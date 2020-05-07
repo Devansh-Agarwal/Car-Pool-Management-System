@@ -70,7 +70,7 @@ public class FetchedRidesActivity extends AppCompatActivity {
     LatLng reqSource, reqDest;
     String reqTime, reqDate;
     int reqSeats;
-
+    final FirebaseUser user_auth = FirebaseAuth.getInstance().getCurrentUser();
     long timeDiff;
     Polyline polyline;
     List <LatLng> routePoints;
@@ -81,7 +81,7 @@ public class FetchedRidesActivity extends AppCompatActivity {
     Bundle bundle;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final FirebaseUser user_auth = FirebaseAuth.getInstance().getCurrentUser();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fetched_rides);
 
@@ -133,7 +133,7 @@ public class FetchedRidesActivity extends AppCompatActivity {
                         int seats = Integer.parseInt(data.get("totalNumberOfSeats").toString().trim());
 
                         boolean ans = checkIfMatches(source, dest, time, date, seats);
-                        if(ans||true) {
+                        if(ans) {
                             flag = 1;
                             try {
                                 displayDriver(source, dest, time, date, seats, data.get("driverUid").toString());
@@ -143,15 +143,16 @@ public class FetchedRidesActivity extends AppCompatActivity {
                             if (seats - reqSeats == 0) {
                                 //remove the ride from the table
 
-                                delDoc(rides.get(i).getId());
+                                delDocOfferRides(data.get("driverUid").toString(), rides.get(i).getId());
                                 Log.d("rideId", rides.get(i).getId());
 //                                delDoc(rides.get(i));
 
                             } else {
                                 //update table
-                                UpdDoc(data.get("driverUid").toString());
+                                UpdDocOfferRides(data.get("driverUid").toString(), rides.get(i).getId(), seats - reqSeats);
                             }
-
+                            upDocAllRidesDriver(data.get("driverUid").toString(), rides.get(i).getId(),seats - reqSeats, data.get("passengerUid"), reqSeats);
+                            upDocAllRidesPassenger(data.get("driverUid").toString(), rides.get(i).getId(), reqDate, reqTime, Integer.toString(seats + reqSeats), reqSource, reqDest);
                             addIdToMatchedRidesTable(rides.get(i).getId(), data.get("driverUid").toString());
                             break;
                         }
@@ -179,7 +180,6 @@ public class FetchedRidesActivity extends AppCompatActivity {
     private void addIdToMatchedRidesTable(final String rideid, final String driverUid) {
         final CollectionReference collRef= FirebaseFirestore.getInstance().collection("MatchedRides");
         DocumentReference docIdRef = collRef.document(rideid);
-        final FirebaseUser user_auth = FirebaseAuth.getInstance().getCurrentUser();
         Log.d("update", user_auth.getUid());
         docIdRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -214,23 +214,105 @@ public class FetchedRidesActivity extends AppCompatActivity {
             }
         });
     }
-
-    private void delDoc(String rideId) {
-        DocumentReference docRef= FirebaseFirestore.getInstance().collection("OfferedRides").document(rideId);
-
-    }
-
-
-    private void UpdDoc(String driverUid) {
+    private void UpdDocOfferRides(String driverUid, String rideId, int numberOfSeats) {
         CollectionReference collRef = FirebaseFirestore.getInstance()
                 .collection("OfferedRides");
+        collRef.document(rideId)
+                .update("totalNumberOfSeats", Integer.toString(numberOfSeats))
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("hakuna", "OfferedRides successfully updated!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("hakuna", "Error updating OfferedRides", e);
+                    }
+                });
+
 
     }
 
-    private void delDoc(DocumentSnapshot rideId) {
-
+    private void delDocOfferRides(String driverUid, String rideId) {
+        CollectionReference collRef = FirebaseFirestore.getInstance()
+                .collection("OfferedRides");
+        collRef.document(rideId)
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("hakuna", "Ride successfully deleted from OfferedRides");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("hakuna", "Error deleting from offered rides", e);
+                    }
+                });
     }
 
+    private void upDocAllRidesDriver(String driverUid, String rideId, int numberOfSeats, Object passList, int numberOfPeople) {
+        DocumentReference docRef = FirebaseFirestore.getInstance().collection("AllRides").document(driverUid).collection("Rides").document(rideId);
+        Map<String, Object> ride = new HashMap<>();
+        ride.put("totalNumberOfSeats", Integer.toString(numberOfSeats));
+        ride.put("numberOfPeople", Integer.toString(numberOfPeople));
+        if(passList == null) {
+            ride.put("passengerUid", Arrays.asList(user_auth.getUid()));
+        }
+        else {
+            ride.put("passengerUid", FieldValue.arrayUnion(user_auth.getUid()));
+        }
+        docRef
+            .update(ride)
+            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d("hakuna", "All Rides successfully updated!");
+                }
+            })
+            .addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.w("hakuna", "Error updating All Rides", e);
+                }
+            });
+    }
+
+    private void upDocAllRidesPassenger(String driverId, String rideId, String date, String time, String seats, LatLng finalSource, LatLng finalDest) {
+        DocumentReference docRef = FirebaseFirestore.getInstance().collection("AllRides").document(user_auth.getUid()).collection("Rides").document(rideId);
+        Map<String, Object> ride = new HashMap<>();
+        ride.put("date", date);
+        ride.put("StartTime", time);
+        ride.put("endTime", null);
+        ride.put("totalNumberOfSeats", seats);
+        ride.put("StartLat", finalSource.latitude);
+        ride.put("StartLon", finalSource.longitude);
+        ride.put("DestLat", finalDest.latitude);
+        ride.put("destLon", finalDest.longitude);
+        ride.put("isDriver", false);
+        ride.put("driverUid", driverId);
+        ride.put("passengerUid", null);
+        ride.put("numberOfPeople",seats);
+        docRef.
+            set(ride)
+            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d("hakuna", "DocumentSnapshot successfully written!");
+//                    Toast.makeText(RideOfferActivity.this,"Ride successfully stored in AllRides database", Toast.LENGTH_SHORT).show();
+                }
+            })
+            .addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.w("hakuna", "Error writing document", e);
+//                    Toast.makeText(RideOfferActivity.this,"Ride storage unsuccessful in AllRides", Toast.LENGTH_SHORT).show();
+                }
+            });
+    }
     private void displayDriver(LatLng offSource, LatLng offDest, String offTime, String offDate, int offSeats, String uid) throws IOException {
         myLinearLayout = (LinearLayout) findViewById(R.id.frame);
         Context context;
