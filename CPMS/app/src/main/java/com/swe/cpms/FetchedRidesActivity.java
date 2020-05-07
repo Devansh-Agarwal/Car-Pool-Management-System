@@ -115,10 +115,8 @@ public class FetchedRidesActivity extends AppCompatActivity {
                         Double lng = (Double) data.get("StartLon");
 
                         LatLng source = new LatLng(lat, lng);
-<<<<<<< Updated upstream
-=======
+
                         Log.d("rideId", rides.get(i).getId());
->>>>>>> Stashed changes
 
                         lat = (Double) data.get("DestLat");
                         lng = (Double) data.get("destLon");
@@ -138,12 +136,10 @@ public class FetchedRidesActivity extends AppCompatActivity {
                             }
                             if (seats - reqSeats == 0) {
                                 //remove the ride from the table
-<<<<<<< Updated upstream
+
                                 delDoc(data.get("driverUid").toString());
-=======
                                 Log.d("rideId", rides.get(i).getId());
                                 delDoc(rides.get(i));
->>>>>>> Stashed changes
 
                             } else {
                                 //update table
@@ -153,11 +149,6 @@ public class FetchedRidesActivity extends AppCompatActivity {
                             addIdToCuurentRidesTable(data.get("driverUid").toString());
                             break;
                         }
-<<<<<<< Updated upstream
-                        
-=======
-
->>>>>>> Stashed changes
                     }
                     if(flag==0){
                         TextView tv;
@@ -181,19 +172,12 @@ public class FetchedRidesActivity extends AppCompatActivity {
 
     private void addIdToCuurentRidesTable(String driverUid) {
     }
-<<<<<<< Updated upstream
 
-    private void UpdDoc(String driverUid) {
-        CollectionReference collRef = FirebaseFirestore.getInstance()
-                                    .collection("OfferedRides");
-
-        }
 
     private void delDoc(String driverUid) {
 
     }
 
-=======
 
     private void UpdDoc(String driverUid) {
         CollectionReference collRef = FirebaseFirestore.getInstance()
@@ -205,7 +189,6 @@ public class FetchedRidesActivity extends AppCompatActivity {
 
     }
 
->>>>>>> Stashed changes
     private void displayDriver(LatLng offSource, LatLng offDest, String offTime, String offDate, int offSeats, String uid) throws IOException {
         myLinearLayout = (LinearLayout) findViewById(R.id.frame);
         Context context;
@@ -267,13 +250,8 @@ public class FetchedRidesActivity extends AppCompatActivity {
         outerLayout.setOrientation(LinearLayout.VERTICAL);
 
         innerLayout1 = new LinearLayout(context);
-<<<<<<< Updated upstream
-         params = new LayoutParams(
-                 LayoutParams.MATCH_PARENT,
-=======
         params = new LayoutParams(
                 LayoutParams.MATCH_PARENT,
->>>>>>> Stashed changes
                 LayoutParams.WRAP_CONTENT
         );
         params.setMargins(10, 40, 40, 10);
@@ -295,8 +273,6 @@ public class FetchedRidesActivity extends AppCompatActivity {
             textview1.setText(name[0]);
         }
 
-<<<<<<< Updated upstream
-
         textview2 = new TextView(context);
         params = new LayoutParams(
                 0,
@@ -373,85 +349,84 @@ public class FetchedRidesActivity extends AppCompatActivity {
         innerLayout2.addView(textview6);
 //        innerLayout2.addView(button);
 
-=======
 
-        textview2 = new TextView(context);
-        params = new LayoutParams(
-                0,
-                LayoutParams.WRAP_CONTENT,
-                2
-        );
-        params.setMargins(10, 40, 10, 10);
-        textview2.setLayoutParams(params);
-        textview2.setGravity(Gravity.RIGHT);
-        textview2.setText(Integer.toString(rating[0])+"stars");
+//        textview2 = new TextView(context);
+//        params = new LayoutParams(
+//                0,
+//                LayoutParams.WRAP_CONTENT,
+//                2
+//        );
+//        params.setMargins(10, 40, 10, 10);
+//        textview2.setLayoutParams(params);
+//        textview2.setGravity(Gravity.RIGHT);
+//        textview2.setText(Integer.toString(rating[0])+"stars");
+//
+//
+//        innerLayout1.addView(textview1);
+//        innerLayout1.addView(textview2);
+//
+//        outerLayout.addView(innerLayout1);
+//
+//        textview3 = new TextView(context);
+//        params = new LayoutParams(
+//                LayoutParams.WRAP_CONTENT,
+//                LayoutParams.WRAP_CONTENT
+//        );
+//        params.setMargins(10, 40, 40, 10);
+//        textview3.setLayoutParams(params);
+//        addresses = geocoder.getFromLocation(offSource.latitude, offSource.longitude, 1);
+//
+//        String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+//        String city = addresses.get(0).getLocality();
+//        String state = addresses.get(0).getAdminArea();
+//        String country = addresses.get(0).getCountryName();
+//
+//        address = address + " " + city + " " + " state" + " " + country;
+//        textview3.setText("From: "+address);
+//
+//        textview4 = new TextView(context);
+//        textview4.setLayoutParams(params);
+//        List<Address> addresses = geocoder.getFromLocation(offDest.latitude, offDest.longitude, 1);
+//
+//        address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+//        city = addresses.get(0).getLocality();
+//        state = addresses.get(0).getAdminArea();
+//        country = addresses.get(0).getCountryName();
+//
+//        address = address + " " + city + " " + " state" + " " + country;
+//        textview4.setText("To: "+address);
+//
+//        outerLayout.addView(textview3);
+//        outerLayout.addView((textview4));
+//
+//        innerLayout2 = new LinearLayout(context);
+//        innerLayout2.setOrientation(LinearLayout.HORIZONTAL);
 
+//        textview5 = new TextView(context);
+//        params = new LayoutParams(
+//                0,
+//                LayoutParams.WRAP_CONTENT,
+//                3
+//        );
+//        params.setMargins(10, 40, 10, 10);
+//        textview5.setLayoutParams(params);
+//        textview5.setGravity(Gravity.LEFT);
+//        textview5.setText("Time: "+offDate + " " + offTime);
+//
+//        textview6 = new TextView(context);
+//        textview6.setLayoutParams(params);
+//        textview6.setGravity((Gravity.RIGHT));
+//        textview6.setText("Seats Avaialable: "+Integer.toString(offSeats));
+//
+////        button = new Button(context);
+////        button.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 3));
+////        button.setText("Request ride");
+//
+//        innerLayout2.addView(textview5);
+//        innerLayout2.addView(textview6);
+////        innerLayout2.addView(button);
 
-        innerLayout1.addView(textview1);
-        innerLayout1.addView(textview2);
-
-        outerLayout.addView(innerLayout1);
-
-        textview3 = new TextView(context);
-        params = new LayoutParams(
-                LayoutParams.WRAP_CONTENT,
-                LayoutParams.WRAP_CONTENT
-        );
-        params.setMargins(10, 40, 40, 10);
-        textview3.setLayoutParams(params);
-        addresses = geocoder.getFromLocation(offSource.latitude, offSource.longitude, 1);
-
-        String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-        String city = addresses.get(0).getLocality();
-        String state = addresses.get(0).getAdminArea();
-        String country = addresses.get(0).getCountryName();
-
-        address = address + " " + city + " " + " state" + " " + country;
-        textview3.setText("From: "+address);
-
-        textview4 = new TextView(context);
-        textview4.setLayoutParams(params);
-        List<Address> addresses = geocoder.getFromLocation(offDest.latitude, offDest.longitude, 1);
-
-        address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-        city = addresses.get(0).getLocality();
-        state = addresses.get(0).getAdminArea();
-        country = addresses.get(0).getCountryName();
-
-        address = address + " " + city + " " + " state" + " " + country;
-        textview4.setText("To: "+address);
-
-        outerLayout.addView(textview3);
-        outerLayout.addView((textview4));
-
-        innerLayout2 = new LinearLayout(context);
-        innerLayout2.setOrientation(LinearLayout.HORIZONTAL);
-
-        textview5 = new TextView(context);
-        params = new LayoutParams(
-                0,
-                LayoutParams.WRAP_CONTENT,
-                3
-        );
-        params.setMargins(10, 40, 10, 10);
-        textview5.setLayoutParams(params);
-        textview5.setGravity(Gravity.LEFT);
-        textview5.setText("Time: "+offDate + " " + offTime);
-
-        textview6 = new TextView(context);
-        textview6.setLayoutParams(params);
-        textview6.setGravity((Gravity.RIGHT));
-        textview6.setText("Seats Avaialable: "+Integer.toString(offSeats));
-
-//        button = new Button(context);
-//        button.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 3));
-//        button.setText("Request ride");
-
-        innerLayout2.addView(textview5);
-        innerLayout2.addView(textview6);
-//        innerLayout2.addView(button);
-
->>>>>>> Stashed changes
+//>>>>>>> Stashed changes
         outerLayout.addView(innerLayout2);
         cardview.addView(outerLayout);
         myLinearLayout.addView(cardview);
@@ -519,8 +494,6 @@ public class FetchedRidesActivity extends AppCompatActivity {
             JSONParser jParser = new JSONParser();
             String json = jParser.getJSONFromUrl(url);
             return json;
-<<<<<<< Updated upstream
-
         }
 
         @Override
@@ -631,124 +604,4 @@ public class FetchedRidesActivity extends AppCompatActivity {
             return "";
         }
     }
-
-
 }
-
-
-=======
-
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-//            progressDialog.hide();
-            if (result != null) {
-                getTimeAndPath(result);
-            }
-        }
-    }
-
-    private void getTimeAndPath(String result) {
-        try {
-            // Tranform the string into a json object
-            final JSONObject json = new JSONObject(result);
-            JSONArray routeArray = json.getJSONArray("routes");
-            JSONObject routes = routeArray.getJSONObject(0);
-
-            JSONObject legs = routes.getJSONObject("legs");
-            JSONObject duration = routes.getJSONObject("duration");
-            timeDiff = Long.valueOf(duration.getString("value"));
-
-            JSONObject overviewPolylines = routes
-                    .getJSONObject("overview_polyline");
-
-            String encodedString = overviewPolylines.getString("points");
-            routePoints = decodePoly(encodedString);
-
-
-
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private List<LatLng> decodePoly(String encoded) {
-        List<LatLng> poly = new ArrayList<LatLng>();
-        int index = 0, len = encoded.length();
-        int lat = 0, lng = 0;
-
-        while (index < len) {
-            int b, shift = 0, result = 0;
-            do {
-                b = encoded.charAt(index++) - 63;
-                result |= (b & 0x1f) << shift;
-                shift += 5;
-            } while (b >= 0x20);
-            int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-            lat += dlat;
-
-            shift = 0;
-            result = 0;
-            do {
-                b = encoded.charAt(index++) - 63;
-                result |= (b & 0x1f) << shift;
-                shift += 5;
-            } while (b >= 0x20);
-            int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-            lng += dlng;
-
-            LatLng p = new LatLng((((double) lat / 1E5)),
-                    (((double) lng / 1E5)));
-            poly.add(p);
-        }
-
-        return poly;
-    }
-    //used for polyline
-    public class JSONParser {
-
-        InputStream is = null;
-        JSONObject jObj = null;
-        String json = "";
-
-        // constructor
-        public JSONParser() {
-        }
-
-        public String getJSONFromUrl(String url) {
-
-            // Making HTTP request
-            try {
-                // defaultHttpClient
-                URL myUrl = new URL(url);
-                HttpsURLConnection conn = null;
-                conn = (HttpsURLConnection)myUrl.openConnection();
-                InputStream is = conn.getInputStream();
-                InputStreamReader isr = new InputStreamReader(is);
-                BufferedReader br = new BufferedReader(isr);
-
-                String inputLine, data;
-                data="";
-                while ((inputLine = br.readLine()) != null) {
-                    System.out.println(inputLine);
-                    data+=inputLine;
-                }
-                br.close();
-                return data;
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return "";
-        }
-    }
-
-
-}
->>>>>>> Stashed changes
