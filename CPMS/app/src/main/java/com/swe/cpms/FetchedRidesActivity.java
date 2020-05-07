@@ -26,12 +26,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -50,7 +53,9 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -76,6 +81,7 @@ public class FetchedRidesActivity extends AppCompatActivity {
     Bundle bundle;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        final FirebaseUser user_auth = FirebaseAuth.getInstance().getCurrentUser();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fetched_rides);
 
@@ -137,16 +143,16 @@ public class FetchedRidesActivity extends AppCompatActivity {
                             if (seats - reqSeats == 0) {
                                 //remove the ride from the table
 
-                                delDoc(data.get("driverUid").toString());
+                                delDoc(rides.get(i).getId());
                                 Log.d("rideId", rides.get(i).getId());
-                                delDoc(rides.get(i));
+//                                delDoc(rides.get(i));
 
                             } else {
                                 //update table
                                 UpdDoc(data.get("driverUid").toString());
                             }
 
-                            addIdToCuurentRidesTable(data.get("driverUid").toString());
+                            addIdToMatchedRidesTable(rides.get(i).getId(), data.get("driverUid").toString());
                             break;
                         }
                     }
@@ -170,11 +176,47 @@ public class FetchedRidesActivity extends AppCompatActivity {
         });
     }
 
-    private void addIdToCuurentRidesTable(String driverUid) {
+    private void addIdToMatchedRidesTable(final String rideid, final String driverUid) {
+        final CollectionReference collRef= FirebaseFirestore.getInstance().collection("MatchedRides");
+        DocumentReference docIdRef = collRef.document(rideid);
+        final FirebaseUser user_auth = FirebaseAuth.getInstance().getCurrentUser();
+        Log.d("update", user_auth.getUid());
+        docIdRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (!document.exists()) {
+                        Map<String, Object> docData = new HashMap<>();
+                        docData.put("DriverId", driverUid);
+                        docData.put("PassengerIds", Arrays.asList(user_auth.getUid()));
+                        Log.d("update", user_auth.getUid());
+                        collRef.document(rideid).set(docData)
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Log.d("update", "DocumentSnapshot successfully written!");
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.w("update", "Error writing document", e);
+                                    }
+                                });
+                        ;
+                    } else {
+                        collRef.document(rideid).update("PassengerIds", FieldValue.arrayUnion(user_auth.getUid()));
+                    }
+                } else {
+                    Log.d("update", "Failed with: ", task.getException());
+                }
+            }
+        });
     }
 
-
-    private void delDoc(String driverUid) {
+    private void delDoc(String rideId) {
+        DocumentReference docRef= FirebaseFirestore.getInstance().collection("OfferedRides").document(rideId);
 
     }
 
@@ -347,86 +389,7 @@ public class FetchedRidesActivity extends AppCompatActivity {
 
         innerLayout2.addView(textview5);
         innerLayout2.addView(textview6);
-//        innerLayout2.addView(button);
 
-
-//        textview2 = new TextView(context);
-//        params = new LayoutParams(
-//                0,
-//                LayoutParams.WRAP_CONTENT,
-//                2
-//        );
-//        params.setMargins(10, 40, 10, 10);
-//        textview2.setLayoutParams(params);
-//        textview2.setGravity(Gravity.RIGHT);
-//        textview2.setText(Integer.toString(rating[0])+"stars");
-//
-//
-//        innerLayout1.addView(textview1);
-//        innerLayout1.addView(textview2);
-//
-//        outerLayout.addView(innerLayout1);
-//
-//        textview3 = new TextView(context);
-//        params = new LayoutParams(
-//                LayoutParams.WRAP_CONTENT,
-//                LayoutParams.WRAP_CONTENT
-//        );
-//        params.setMargins(10, 40, 40, 10);
-//        textview3.setLayoutParams(params);
-//        addresses = geocoder.getFromLocation(offSource.latitude, offSource.longitude, 1);
-//
-//        String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-//        String city = addresses.get(0).getLocality();
-//        String state = addresses.get(0).getAdminArea();
-//        String country = addresses.get(0).getCountryName();
-//
-//        address = address + " " + city + " " + " state" + " " + country;
-//        textview3.setText("From: "+address);
-//
-//        textview4 = new TextView(context);
-//        textview4.setLayoutParams(params);
-//        List<Address> addresses = geocoder.getFromLocation(offDest.latitude, offDest.longitude, 1);
-//
-//        address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-//        city = addresses.get(0).getLocality();
-//        state = addresses.get(0).getAdminArea();
-//        country = addresses.get(0).getCountryName();
-//
-//        address = address + " " + city + " " + " state" + " " + country;
-//        textview4.setText("To: "+address);
-//
-//        outerLayout.addView(textview3);
-//        outerLayout.addView((textview4));
-//
-//        innerLayout2 = new LinearLayout(context);
-//        innerLayout2.setOrientation(LinearLayout.HORIZONTAL);
-
-//        textview5 = new TextView(context);
-//        params = new LayoutParams(
-//                0,
-//                LayoutParams.WRAP_CONTENT,
-//                3
-//        );
-//        params.setMargins(10, 40, 10, 10);
-//        textview5.setLayoutParams(params);
-//        textview5.setGravity(Gravity.LEFT);
-//        textview5.setText("Time: "+offDate + " " + offTime);
-//
-//        textview6 = new TextView(context);
-//        textview6.setLayoutParams(params);
-//        textview6.setGravity((Gravity.RIGHT));
-//        textview6.setText("Seats Avaialable: "+Integer.toString(offSeats));
-//
-////        button = new Button(context);
-////        button.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 3));
-////        button.setText("Request ride");
-//
-//        innerLayout2.addView(textview5);
-//        innerLayout2.addView(textview6);
-////        innerLayout2.addView(button);
-
-//>>>>>>> Stashed changes
         outerLayout.addView(innerLayout2);
         cardview.addView(outerLayout);
         myLinearLayout.addView(cardview);
