@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
+
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -15,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -22,7 +24,9 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+
 import com.google.android.gms.maps.model.PolylineOptions;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,6 +38,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.model.DocumentCollections;
+
 
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
@@ -66,6 +71,7 @@ public class MyRides extends AppCompatActivity {
         user_auth = FirebaseAuth.getInstance().getCurrentUser();
         geocoder = new Geocoder(MyRides.this , Locale.getDefault());
 
+
         myLinearLayout = (LinearLayout) findViewById(R.id.frameMyRides);
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference colRef = db.collection("AllRides").document(user_auth.getUid()).collection("Rides");
@@ -86,6 +92,7 @@ public class MyRides extends AppCompatActivity {
                         lng = (Double) data.get("destLon");
                         LatLng dest = new LatLng(lat, lng);
 
+
                         String startTime = data.get("StartTime").toString();
 //                        String endTime = data.get("EndTime").toString();
                         String date = data.get("date").toString();
@@ -95,6 +102,7 @@ public class MyRides extends AppCompatActivity {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+
                     }
 
                     Toast.makeText(MyRides.this,"Rides fetched successfully", Toast.LENGTH_SHORT).show();
@@ -105,6 +113,7 @@ public class MyRides extends AppCompatActivity {
         });
 
     }
+
 
     private void displayMyRides(LatLng source, LatLng dest, String startTime, String date, int seats) throws IOException {
         myLinearLayout = (LinearLayout) findViewById(R.id.frameMyRides);
@@ -126,6 +135,10 @@ public class MyRides extends AppCompatActivity {
 
         cardview = new CardView(context);
         cardview.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+
+
+
+
         cardview.setRadius(15);
         cardview.setPadding(25, 25, 25, 25);
         cardview.setCardBackgroundColor(Color.WHITE);
@@ -136,6 +149,7 @@ public class MyRides extends AppCompatActivity {
         outerLayout = new LinearLayout(context);
         outerLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         outerLayout.setOrientation(LinearLayout.VERTICAL);
+
 
         textview3 = new TextView(context);
         params = new LayoutParams(
@@ -167,6 +181,7 @@ public class MyRides extends AppCompatActivity {
         address = address + " " + city + " " + state + " " + country;
         textview4.setText("To: "+address);
 
+
         outerLayout.addView(textview3);
         outerLayout.addView((textview4));
 
@@ -174,6 +189,7 @@ public class MyRides extends AppCompatActivity {
         innerLayout2.setOrientation(LinearLayout.HORIZONTAL);
 
         textview5 = new TextView(context);
+
         params = new LayoutParams(
                 0,
                 LayoutParams.WRAP_CONTENT,
@@ -214,10 +230,15 @@ public class MyRides extends AppCompatActivity {
 //        button.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 3));
 //        button.setText("Request ride");
 
+
+
+
+
         innerLayout2.addView(textview5);
         innerLayout2.addView(textview6);
 
         outerLayout.addView(innerLayout2);
+
         outerLayout.addView(textview1);
         cardview.addView(outerLayout);
         myLinearLayout.addView(cardview);
@@ -336,5 +357,8 @@ public class MyRides extends AppCompatActivity {
 //            ]
             return "";
         }
+
+
+
     }
 }

@@ -16,11 +16,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
+
+
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.Toast;
+
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
@@ -28,12 +31,14 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -63,6 +68,8 @@ import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 
 
+
+
 public class FetchedRidesActivity extends AppCompatActivity {
 
     LinearLayout myLinearLayout, outerLayout;
@@ -84,6 +91,7 @@ public class FetchedRidesActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fetched_rides);
+
 
         geocoder = new Geocoder(FetchedRidesActivity.this ,Locale.getDefault());
 
@@ -166,7 +174,6 @@ public class FetchedRidesActivity extends AppCompatActivity {
                         myLinearLayout = (LinearLayout) findViewById(R.id.frame);
                         myLinearLayout.addView(tv);
                     }
-
 
                 }
                 else{
