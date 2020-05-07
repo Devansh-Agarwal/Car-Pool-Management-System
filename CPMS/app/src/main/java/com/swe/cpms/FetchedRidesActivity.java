@@ -1,6 +1,7 @@
 package com.swe.cpms;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
@@ -13,6 +14,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -58,7 +61,7 @@ import javax.net.ssl.HttpsURLConnection;
 public class FetchedRidesActivity extends AppCompatActivity {
 
     LinearLayout myLinearLayout, outerLayout;
-
+    CardView cardview;
     LatLng reqSource, reqDest;
     String reqTime, reqDate;
     int reqSeats;
@@ -67,7 +70,7 @@ public class FetchedRidesActivity extends AppCompatActivity {
     Polyline polyline;
     List <LatLng> routePoints;
 
-    Geocoder geocoder = new Geocoder(FetchedRidesActivity.this ,Locale.getDefault());
+    Geocoder geocoder;
     List<Address> addresses;
 
     Bundle bundle;
@@ -75,6 +78,8 @@ public class FetchedRidesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fetched_rides);
+
+        geocoder = new Geocoder(FetchedRidesActivity.this ,Locale.getDefault());
 
         Log.d("bla", "before database");
         bundle = getIntent().getExtras();
@@ -97,35 +102,58 @@ public class FetchedRidesActivity extends AppCompatActivity {
 
         colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+            public void onComplete(@ NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful()){
                     QuerySnapshot coll = task.getResult();
                     List<DocumentSnapshot> rides= coll.getDocuments();
 
+                    int flag=0;
                     for(int i=0;i<rides.size();i++){
-                        Map<String,Object> data = rides.get(0).getData();
+                        Map<String,Object> data = rides.get(i).getData();
 
-                        Double lat = (Double) data.get("startLat");
-                        Double lng = (Double) data.get("startLon");
+                        Double lat = Double.valueOf(data.get("StartLat").toString());
+                        Double lng = (Double) data.get("StartLon");
+
                         LatLng source = new LatLng(lat, lng);
 
                         lat = (Double) data.get("DestLat");
-                        lng = (Double) data.get("DestLon");
+                        lng = (Double) data.get("destLon");
                         LatLng dest = new LatLng(lat, lng);
 
                         String time = data.get("StartTime").toString();
                         String date = data.get("date").toString();
-                        int seats = (Integer)data.get("totalNumberOfSeats");
+                        int seats = Integer.parseInt(data.get("totalNumberOfSeats").toString().trim());
 
                         boolean ans = checkIfMatches(source, dest, time, date, seats);
-                        if(ans || true){
-                            Log.d("bla", "after checkIfMatches");
+                        if(ans||true) {
+                            flag = 1;
                             try {
-                                displayDriver(source, dest, time, date, seats);
+                                displayDriver(source, dest, time, date, seats, data.get("driverUid").toString());
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
+                            if (seats - reqSeats == 0) {
+                                //remove the ride from the table
+                                delDoc(data.get("driverUid").toString());
+
+                            } else {
+                                //update table
+                                UpdDoc(data.get("driverUid").toString());
+                            }
+
+                            addIdToCuurentRidesTable(data.get("driverUid").toString());
+                            break;
                         }
+                        
+                    }
+                    if(flag==0){
+                        TextView tv;
+                        tv = new TextView(getApplicationContext());
+                        tv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+                        tv.setGravity(Gravity.CENTER);
+                        tv.setText("No drivers available");
+                        myLinearLayout = (LinearLayout) findViewById(R.id.frame);
+                        myLinearLayout.addView(tv);
                     }
 
 
@@ -136,111 +164,63 @@ public class FetchedRidesActivity extends AppCompatActivity {
                 }
             }
         });
-
-
-        myLinearLayout = (LinearLayout) findViewById(R.id.frame);
-//        final int N = 20; // total number of textviews to add
-//
-//        Context context;
-//        CardView cardview;
-//        TextView textview, textview1, textview2, textview3, textview4, textview5, textview6;
-//        Button button;
-//        LinearLayout innerLayout1,innerLayout2;
-//
-//        context = getApplicationContext();
-//        //Get the bundle
-//        String fare = bundle.getString("fare");
-//
-//
-//        TextView mFare = (TextView)findViewById(R.id.fare);
-//        mFare.setText(fare);
-//
-//        for (int i = 0; i < N; i++) {
-//
-//            cardview = new CardView(context);
-//
-//            cardview.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-//
-//            cardview.setRadius(15);
-//            cardview.setPadding(25, 25, 25, 25);
-//            cardview.setCardBackgroundColor(Color.WHITE);
-//            cardview.setMaxCardElevation(30);
-//            cardview.setMaxCardElevation(6);
-//            cardview.setUseCompatPadding(true);
-//
-//            outerLayout = new LinearLayout(context);
-//            outerLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-//            outerLayout.setOrientation(LinearLayout.VERTICAL);
-//
-//            innerLayout1 = new LinearLayout(context);
-//            innerLayout1.setOrientation(LinearLayout.HORIZONTAL);
-//
-//            textview1 = new TextView(context);
-//            textview1.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 4));
-//            textview1.setText("name");
-//
-//            textview2 = new TextView(context);
-//            textview2.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 2));
-//            textview2.setText("rating");
-//
-//            innerLayout1.addView(textview1);
-//            innerLayout1.addView(textview2);
-//
-//            outerLayout.addView(innerLayout1);
-//
-//            textview3 = new TextView(context);
-//            textview3.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-//            textview3.setText("source");
-//
-//            textview4 = new TextView(context);
-//            textview4.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-//            textview4.setText("destination");
-//
-//            outerLayout.addView(textview3);
-//            outerLayout.addView((textview4));
-//
-//            innerLayout2 = new LinearLayout(context);
-//            innerLayout2.setOrientation(LinearLayout.HORIZONTAL);
-//
-//            textview5 = new TextView(context);
-//            textview5.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 2));
-//            textview5.setText("time");
-//
-//            textview6 = new TextView(context);
-//            textview6.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 2));
-//            textview6.setText("seats");
-//
-//            button = new Button(context);
-//            button.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 3));
-//            button.setText("Request ride");
-//
-//            innerLayout2.addView(textview5);
-//            innerLayout2.addView(textview6);
-//            innerLayout2.addView(button);
-//
-//            outerLayout.addView(innerLayout2);
-//            cardview.addView(outerLayout);
-//            myLinearLayout.addView(cardview);
-//        }
     }
 
-    private void displayDriver(LatLng offSource, LatLng offDest, String offTime, String offDate, int offSeats) throws IOException {
-        final int N = 20; // total number of textviews to add
+    private void addIdToCuurentRidesTable(String driverUid) {
+    }
 
+    private void UpdDoc(String driverUid) {
+        CollectionReference collRef = FirebaseFirestore.getInstance()
+                                    .collection("OfferedRides");
+
+        }
+
+    private void delDoc(String driverUid) {
+
+    }
+
+    private void displayDriver(LatLng offSource, LatLng offDest, String offTime, String offDate, int offSeats, String uid) throws IOException {
+        myLinearLayout = (LinearLayout) findViewById(R.id.frame);
         Context context;
-        CardView cardview;
         TextView textview, textview1, textview2, textview3, textview4, textview5, textview6;
-        Button button;
         LinearLayout innerLayout1,innerLayout2;
 
         context = getApplicationContext();
-        //Get the bundle
         String fare = bundle.getString("fare");
 
-
         TextView mFare = (TextView)findViewById(R.id.fare);
+        TextView eFare = (TextView)findViewById(R.id.fareName);
+        eFare.setText("Estimated Fare");
         mFare.setText(fare);
 
+        final String[] name = new String[1];
+        final int[] rating = new int[1];
+
+        DocumentReference docRef = FirebaseFirestore.getInstance().collection("users").document(uid);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Map<String,Object> data = document.getData();
+                        name[0] = data.getOrDefault("name", "Ashok").toString();
+                        rating[0] = Integer.parseInt(data.get("avg_rating").toString().trim());
+                    } else {
+                        Log.d("bla", "No such document");
+                    }
+                } else {
+                    Log.d("bla", "get failed with ", task.getException());
+                }
+            }
+        });
+
+        LayoutParams params = new LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(10, 40, 40, 10);
 //       List<Address> addresses;
 
         cardview = new CardView(context);
@@ -248,6 +228,7 @@ public class FetchedRidesActivity extends AppCompatActivity {
         cardview.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
         cardview.setRadius(15);
+
         cardview.setPadding(25, 25, 25, 25);
         cardview.setCardBackgroundColor(Color.WHITE);
         cardview.setMaxCardElevation(30);
@@ -259,15 +240,41 @@ public class FetchedRidesActivity extends AppCompatActivity {
         outerLayout.setOrientation(LinearLayout.VERTICAL);
 
         innerLayout1 = new LinearLayout(context);
+         params = new LayoutParams(
+                 LayoutParams.MATCH_PARENT,
+                LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(10, 40, 40, 10);
         innerLayout1.setOrientation(LinearLayout.HORIZONTAL);
 
         textview1 = new TextView(context);
-        textview1.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 4));
-        textview1.setText("name");
+        params = new LayoutParams(
+                0,
+                LayoutParams.WRAP_CONTENT,
+                4
+        );
+        params.setMargins(10, 40, 10, 10);
+        textview1.setLayoutParams(params);
+        textview1.setGravity(Gravity.LEFT);
+        if(name[0]==""){
+            textview1.setText("Ashok");
+        }
+        else{
+            textview1.setText(name[0]);
+        }
+
 
         textview2 = new TextView(context);
-        textview2.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 2));
-        textview2.setText("rating");
+        params = new LayoutParams(
+                0,
+                LayoutParams.WRAP_CONTENT,
+                2
+        );
+        params.setMargins(10, 40, 10, 10);
+        textview2.setLayoutParams(params);
+        textview2.setGravity(Gravity.RIGHT);
+        textview2.setText(Integer.toString(rating[0])+"stars");
+
 
         innerLayout1.addView(textview1);
         innerLayout1.addView(textview2);
@@ -275,7 +282,12 @@ public class FetchedRidesActivity extends AppCompatActivity {
         outerLayout.addView(innerLayout1);
 
         textview3 = new TextView(context);
-        textview3.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        params = new LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(10, 40, 40, 10);
+        textview3.setLayoutParams(params);
         addresses = geocoder.getFromLocation(offSource.latitude, offSource.longitude, 1);
 
         String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
@@ -284,11 +296,11 @@ public class FetchedRidesActivity extends AppCompatActivity {
         String country = addresses.get(0).getCountryName();
 
         address = address + " " + city + " " + " state" + " " + country;
-        textview3.setText(address);
+        textview3.setText("From: "+address);
 
         textview4 = new TextView(context);
-        textview4.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        List<Address> addresses = geocoder.getFromLocation(offSource.latitude, offSource.longitude, 1);
+        textview4.setLayoutParams(params);
+        List<Address> addresses = geocoder.getFromLocation(offDest.latitude, offDest.longitude, 1);
 
         address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
         city = addresses.get(0).getLocality();
@@ -296,7 +308,7 @@ public class FetchedRidesActivity extends AppCompatActivity {
         country = addresses.get(0).getCountryName();
 
         address = address + " " + city + " " + " state" + " " + country;
-        textview4.setText(address);
+        textview4.setText("To: "+address);
 
         outerLayout.addView(textview3);
         outerLayout.addView((textview4));
@@ -305,20 +317,28 @@ public class FetchedRidesActivity extends AppCompatActivity {
         innerLayout2.setOrientation(LinearLayout.HORIZONTAL);
 
         textview5 = new TextView(context);
-        textview5.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 2));
-        textview5.setText(offDate + " " + offTime);
+        params = new LayoutParams(
+                0,
+                LayoutParams.WRAP_CONTENT,
+                3
+        );
+        params.setMargins(10, 40, 10, 10);
+        textview5.setLayoutParams(params);
+        textview5.setGravity(Gravity.LEFT);
+        textview5.setText("Time: "+offDate + " " + offTime);
 
         textview6 = new TextView(context);
-        textview6.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 2));
-        textview6.setText(offSeats);
+        textview6.setLayoutParams(params);
+        textview6.setGravity((Gravity.RIGHT));
+        textview6.setText("Seats Avaialable: "+Integer.toString(offSeats));
 
-        button = new Button(context);
-        button.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 3));
-        button.setText("Request ride");
+//        button = new Button(context);
+//        button.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 3));
+//        button.setText("Request ride");
 
         innerLayout2.addView(textview5);
         innerLayout2.addView(textview6);
-        innerLayout2.addView(button);
+//        innerLayout2.addView(button);
 
         outerLayout.addView(innerLayout2);
         cardview.addView(outerLayout);

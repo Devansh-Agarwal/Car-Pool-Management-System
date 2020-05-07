@@ -204,12 +204,12 @@ public class RideRequestActivity extends FragmentActivity implements OnMapReadyC
                     bundle.putString("finalDestLng", Double.toString(finalSource.longitude));
                     bundle.putString("startTime", time);
                     bundle.putString("date", date);
-                    bundle.putString("seats", time);
+                    bundle.putString("seats", seats);
                     Log.d("bla", "inRideRequest");
                     intent.putExtras(bundle);
                     Log.d("bla", "inRideRequest");
                     startActivity(intent);
-                    Log.d("bla", "inRideRequest");
+                    Log.d("bla", "inRideRequest1");
 //                    finish();
 //                    return;
                 }
