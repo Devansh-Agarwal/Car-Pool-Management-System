@@ -78,7 +78,7 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
 
     LatLng offSource, offDest;
     String offTime, offDate;
-    int offSeats;
+    int offSeats, offPassenger;
 
     int reqCount=0;
 
@@ -184,11 +184,14 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
             }
         });
     }
-    private void UpdDocOfferRides(String driverUid, String rideId, int numberOfSeats) {
+    private void UpdDocOfferRides(String driverUid, String rideId, int numberOfSeats, int numberOfPeople) {
         CollectionReference collRef = FirebaseFirestore.getInstance()
                 .collection("OfferedRides");
+        Map<String, Object> ride = new HashMap<>();
+        ride.put("totalNumberOfSeats", Integer.toString(numberOfSeats));
+        ride.put("numberOfPeople", Integer.toString(numberOfPeople));
         collRef.document(rideId)
-                .update("totalNumberOfSeats", Integer.toString(numberOfSeats))
+                .update(ride)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -251,7 +254,7 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
                 });
     }
 
-    private void upDocAllRidesPassenger(String driverId, String rideId, String date, String time, String seats, LatLng finalSource, LatLng finalDest) {
+    private void upDocAllRidesPassenger(String driverId, String rideId, String date, String time, String seats, LatLng finalSource, LatLng finalDest, String passengers) {
         DocumentReference docRef = FirebaseFirestore.getInstance().collection("AllRides").document(user_auth.getUid()).collection("Rides").document(rideId);
         Map<String, Object> ride = new HashMap<>();
         ride.put("date", date);
@@ -265,7 +268,7 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
         ride.put("isDriver", false);
         ride.put("driverUid", driverId);
         ride.put("passengerUid", null);
-        ride.put("numberOfPeople",seats);
+        ride.put("numberOfPeople",passengers);
         docRef.
                 set(ride)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -470,11 +473,11 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
 
             boolean check1, check2, check3;
             Log.d("async", Double.toString(reqSource.latitude)+" "+Double.toString(reqSource.longitude));
-            check1 = PolyUtil.isLocationOnPath(reqSource, routePoints, true, 0.5);
+            check1 = PolyUtil.isLocationOnPath(reqSource, routePoints, true, 50);
             Log.d("async", Double.toString(reqDest.latitude)+" "+Double.toString(reqDest.longitude));
-            check2 = PolyUtil.isLocationOnPath(reqDest, routePoints, true, 0.5);
+            check2 = PolyUtil.isLocationOnPath(reqDest, routePoints, true, 50);
 //                LatLng l = new LatLng(17.06019, 79.28231);
-            check3 = PolyUtil.isLocationOnPath(offSource, routePoints, true, 0.1) ;
+            check3 = PolyUtil.isLocationOnPath(offSource, routePoints, true, 50) ;
             Log.d("async", Double.toString(offSource.latitude)+" "+Double.toString(offSource.longitude));
 
             if(check1)Log.d("sync", "source lies on route");
@@ -555,7 +558,7 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
                         offTime = data.get("StartTime").toString();
                         offDate = data.get("date").toString();
                         offSeats = Integer.parseInt(data.get("totalNumberOfSeats").toString().trim());
-
+                        offPassenger = Integer.parseInt(data.get("numberOfPeople").toString().trim());
                         routePoints = new ArrayList<>();
                         List<Object> locations = (List<Object>) data.get("routePoints");
                         if(locations!=null) {
@@ -582,10 +585,10 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
 
                             } else {
                                 //update table
-                                UpdDocOfferRides(data.get("driverUid").toString(), rides.get(i).getId(), offSeats - reqSeats);
+                                UpdDocOfferRides(data.get("driverUid").toString(), rides.get(i).getId(), offSeats - reqSeats, offPassenger + reqSeats);
                             }
-                            upDocAllRidesDriver(data.get("driverUid").toString(), rides.get(i).getId(),offSeats - reqSeats, data.get("passengerUid"), reqSeats);
-                            upDocAllRidesPassenger(data.get("driverUid").toString(), rides.get(i).getId(), reqDate, reqTime, Integer.toString(offSeats + reqSeats), reqSource, reqDest);
+                            upDocAllRidesDriver(data.get("driverUid").toString(), rides.get(i).getId(),offSeats - reqSeats, data.get("passengerUid"), offPassenger + reqSeats);
+                            upDocAllRidesPassenger(data.get("driverUid").toString(), rides.get(i).getId(), reqDate, reqTime, Integer.toString(offSeats - reqSeats), reqSource, reqDest,  Integer.toString(offPassenger + reqSeats));
                             addIdToMatchedRidesTable(rides.get(i).getId(), data.get("driverUid").toString());
                             break;
                         }

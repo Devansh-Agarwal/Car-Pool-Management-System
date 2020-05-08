@@ -84,7 +84,7 @@ public class MyRides extends AppCompatActivity {
                     QuerySnapshot coll = task.getResult();
                     List<DocumentSnapshot> rides= coll.getDocuments();
                     for(int i=0;i<rides.size();i++){
-                        Map<String,Object> data = rides.get(0).getData();
+                        Map<String,Object> data = rides.get(i).getData();
 
                         Double lat = (Double) data.get("StartLat");
                         Double lng = (Double) data.get("StartLon");
@@ -98,7 +98,7 @@ public class MyRides extends AppCompatActivity {
                         String startTime = data.get("StartTime").toString();
 //                        String endTime = data.get("EndTime").toString();
                         String date = data.get("date").toString();
-                        int seats = Integer.parseInt(data.get("totalNumberOfSeats").toString().trim());
+                        int seats = Integer.parseInt(data.get("numberOfPeople").toString().trim());
                         try {
                             displayMyRides(source, dest, startTime, date, seats);
                         } catch (IOException e) {

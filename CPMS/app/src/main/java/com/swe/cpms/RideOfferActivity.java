@@ -431,7 +431,7 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d("hakuna", "DocumentSnapshot successfully written!");
-                        Toast.makeText(RideOfferActivity.this,"Ride successfully stored in AllRides database", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RideOfferActivity.this,"Ride successfully offered", Toast.LENGTH_LONG).show();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -448,7 +448,7 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d("hakuna", "DocumentSnapshot successfully written!");
-                        Toast.makeText(RideOfferActivity.this,"Ride successfully stored in Offered Rides database", Toast.LENGTH_SHORT).show();
+                //        Toast.makeText(RideOfferActivity.this,"Ride successfully stored in Offered Rides database", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
