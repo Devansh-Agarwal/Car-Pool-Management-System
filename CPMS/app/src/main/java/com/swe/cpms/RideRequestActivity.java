@@ -195,7 +195,7 @@ public class RideRequestActivity extends FragmentActivity implements OnMapReadyC
                     Toast.makeText(RideRequestActivity.this, "Enter the number of seats", Toast.LENGTH_SHORT).show();
                 }
                 else{
-                    Intent intent = new Intent(RideRequestActivity.this, FetchedRidesActivity.class);
+                    Intent intent = new Intent(RideRequestActivity.this, FetchedRidesActivity1.class);
                     Bundle bundle = new Bundle();
                     bundle.putString("fare","250");
                     bundle.putString("finalSourceLat", Double.toString(finalSource.latitude));

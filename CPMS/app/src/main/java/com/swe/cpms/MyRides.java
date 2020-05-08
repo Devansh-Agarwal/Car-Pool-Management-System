@@ -49,7 +49,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.math.RoundingMode;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -207,13 +209,14 @@ public class MyRides extends AppCompatActivity {
 
 
         Double ecoMetric=0.0;
-        if(ecoMetDist!=null) {
-            ecoMetric = (ecoMetDist * 132 * 0.75) / (seats * 1000);
-            Log.d("eco", ecoMetric.toString()+"bla");
-        }
-        else {
-            Log.d("eco","bla");
-        }
+        ecoMetDist = Math.sqrt((source.latitude - dest.latitude)*(source.latitude - dest.latitude)
+                                + (source.longitude - dest.longitude)*(source.longitude - dest.longitude));
+
+        ecoMetric = Math.abs((ecoMetDist * 10 * 132 * 0.75) / (seats));
+
+        DecimalFormat df = new DecimalFormat("#.###");
+        df.setRoundingMode(RoundingMode.CEILING);
+
 
         textview1 = new TextView(context);
         params = new LayoutParams(
@@ -223,7 +226,7 @@ public class MyRides extends AppCompatActivity {
         params.setMargins(10, 40, 10, 10);
         textview1.setLayoutParams(params);
         textview1.setGravity(Gravity.LEFT);
-        String s = "You reduced " + ecoMetric + "g of carbon emission with this trip";
+        String s = "You reduced " + df.format(ecoMetric) + "g of carbon emission with this trip";
         textview1.setText(s);
 
 //        button = new Button(context);
@@ -295,22 +298,14 @@ public class MyRides extends AppCompatActivity {
     private void getDist(String result) {
         try {
             // Tranform the string into a json object
-            Log.d("exception", "1");
             final JSONObject json = new JSONObject(result);
-            Log.d("exception", "2");
             JSONArray routeArray = json.getJSONArray("routes");
-            Log.d("exception", "3");
             JSONObject routes = routeArray.getJSONObject(0);
-            Log.d("exception", "4");
 
             JSONArray legArr = routes.getJSONArray("legs");
-            Log.d("exception", "5");
             JSONObject legs = legArr.getJSONObject(0);
-            Log.d("exception", "6");
             JSONObject duration = legs.getJSONObject("distance");
-            Log.d("exception", "7");
             ecoMetDist = Double.valueOf(duration.getString("value"));
-            Log.d("eco", ecoMetDist.toString());
         } catch (Exception e) {
             Log.d("eco", "exception");
             e.printStackTrace();

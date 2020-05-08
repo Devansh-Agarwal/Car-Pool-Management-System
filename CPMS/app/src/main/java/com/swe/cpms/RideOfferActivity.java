@@ -86,8 +86,11 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
     private AutocompleteSupportFragment mDestination;
     private Button mOffer;
     private LatLng finalSource=null, finalDest=null;
+    String finalDate, finalTime, finalSeats;
     final private FirebaseUser user_auth = FirebaseAuth.getInstance().getCurrentUser();
     Polyline polyline;
+
+    List<LatLng> routePoints;
 
     GoogleMap gmap;
     SupportMapFragment mapFragment;
@@ -189,9 +192,9 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
         mOffer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final String date = mDate.getText().toString();
-                final String time = mTime.getText().toString();
-                final String seats = mSeats.getText().toString();
+                finalDate = mDate.getText().toString();
+                finalTime = mTime.getText().toString();
+                finalSeats = mSeats.getText().toString();
 
                 if(finalSource==null){
                     Toast.makeText(RideOfferActivity.this, "Enter start address", Toast.LENGTH_SHORT).show();
@@ -199,18 +202,18 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
                 else if(finalDest==null){
                     Toast.makeText(RideOfferActivity.this, "Enter end address", Toast.LENGTH_SHORT).show();
                 }
-                else if(TextUtils.isEmpty(date)){
+                else if(TextUtils.isEmpty(finalDate)){
                     Toast.makeText(RideOfferActivity.this, "Enter date", Toast.LENGTH_SHORT).show();
                 }
-                else if(TextUtils.isEmpty(time)){
+                else if(TextUtils.isEmpty(finalTime)){
                     Toast.makeText(RideOfferActivity.this, "Enter time", Toast.LENGTH_SHORT).show();
                 }
-                else if(TextUtils.isEmpty(seats)){
+                else if(TextUtils.isEmpty(finalSeats)){
                     Toast.makeText(RideOfferActivity.this, "Enter the number of seats", Toast.LENGTH_SHORT).show();
                 }
                 else{
-                    addOfferDetailsToDb(date, time, seats, finalSource, finalDest);
                     polylineLFunc();
+
                 }
             }
         });
@@ -243,10 +246,10 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
         protected void onPreExecute() {
             // TODO Auto-generated method stub
             super.onPreExecute();
-            progressDialog = new ProgressDialog(RideOfferActivity.this);
-            progressDialog.setMessage("Fetching route, Please wait...");
-            progressDialog.setIndeterminate(true);
-            progressDialog.show();
+//            progressDialog = new ProgressDialog(RideOfferActivity.this);
+//            progressDialog.setMessage("Fetching route, Please wait...");
+//            progressDialog.setIndeterminate(true);
+//            progressDialog.show();
         }
 
         @Override
@@ -260,7 +263,7 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            progressDialog.hide();
+//            progressDialog.hide();
             if (result != null) {
                 drawPath(result);
             }
@@ -329,30 +332,31 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
                     .getJSONObject("overview_polyline");
 
             String encodedString = overviewPolylines.getString("points");
-            List<LatLng> list = decodePoly(encodedString);
+            routePoints = decodePoly(encodedString);
+            addOfferDetailsToDb(finalDate, finalTime, finalSeats, finalSource, finalDest, routePoints);
 
             PolylineOptions options = new PolylineOptions().width(5).color(Color.BLUE).geodesic(true);
-            for (int z = 0; z < list.size() ; z++) {
+            for (int z = 0; z < routePoints.size() ; z++) {
 //                LatLng src = list.get(z);
 //                LatLng dest = list.get(z + 1);
 //                polyline = gmap.addPolyline(new PolylineOptions()
 //                        .add(new LatLng(src.latitude, src.longitude),
 //                                new LatLng(dest.latitude, dest.longitude))
 //                        .width(5).color(Color.BLUE).geodesic(true));
-                LatLng point = list.get(z);
+                LatLng point = routePoints.get(z);
                 options.add(point);
             }
             polyline = gmap.addPolyline(options);
 
-            for (int z = 0; z < list.size() ; z++) {
+            for (int z = 0; z < routePoints.size() ; z++) {
 //                LatLng src = list.get(z);
 //                LatLng dest = list.get(z + 1);
 //                polyline = gmap.addPolyline(new PolylineOptions()
 //                        .add(new LatLng(src.latitude, src.longitude),
 //                                new LatLng(dest.latitude, dest.longitude))
 //                        .width(5).color(Color.BLUE).geodesic(true));
-                LatLng point = list.get(z);
-                boolean ans = PolyUtil.isLocationOnEdge(point, list, true);
+                LatLng point = routePoints.get(z);
+                boolean ans = PolyUtil.isLocationOnEdge(point, routePoints, true);
                 if(ans){
                     Log.d("isLoc", Double.toString(z));
                 }
@@ -398,7 +402,7 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
     }
 
     //    wirtes it to db - incomplete
-    private void addOfferDetailsToDb(String date, String time, String seats, LatLng finalSource, LatLng finalDest ){
+    private void addOfferDetailsToDb(String date, String time, String seats, LatLng finalSource, LatLng finalDest , List routePoints){
 //            write it to database
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -415,6 +419,7 @@ public class RideOfferActivity extends FragmentActivity implements OnMapReadyCal
         ride.put("driverUid",user_auth.getUid());
         ride.put("passengerUid", null);
         ride.put("numberOfPeople",0);
+        ride.put("routePoints", routePoints);
         String rideID = UUID.randomUUID().toString();
         // Add new ride to db
         db.collection("AllRides")
