@@ -52,6 +52,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -64,6 +65,9 @@ public class MyRides extends AppCompatActivity {
     private FirebaseUser user_auth;
     Geocoder geocoder;
     Double ecoMetDist;
+
+    List <Double> dist;
+    int reqCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,29 +87,35 @@ public class MyRides extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     QuerySnapshot coll = task.getResult();
                     List<DocumentSnapshot> rides= coll.getDocuments();
+
+                    String origins="", dests="";
+                    reqCount = rides.size();
                     for(int i=0;i<rides.size();i++){
                         Map<String,Object> data = rides.get(i).getData();
+
+                        if(i!=0)
+                        {
+                            origins+="|";
+                            dests+="|";
+                        }
 
                         Double lat = (Double) data.get("StartLat");
                         Double lng = (Double) data.get("StartLon");
                         LatLng source = new LatLng(lat, lng);
 
+                        origins+=lat.toString()+","+lng.toString();
+
+
                         lat = (Double) data.get("DestLat");
                         lng = (Double) data.get("destLon");
                         LatLng dest = new LatLng(lat, lng);
 
-
-                        String startTime = data.get("StartTime").toString();
-//                        String endTime = data.get("EndTime").toString();
-                        String date = data.get("date").toString();
-                        int seats = Integer.parseInt(data.get("numberOfPeople").toString().trim());
-                        try {
-                            displayMyRides(source, dest, startTime, date, seats);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
+                        dests+=lat.toString()+","+lng.toString();
                     }
+
+                    String url="https://maps.googleapis.com/maps/api/distancematrix/json?origins="+origins+"&destinations="+dests+"&key="+getString(R.string.google_api_key);
+                    Log.d("url", url);
+                    new MyRides.connectAsyncTask(url).execute();
 
                     Toast.makeText(MyRides.this,"Rides fetched successfully", Toast.LENGTH_SHORT).show();
                 } else {
@@ -116,17 +126,13 @@ public class MyRides extends AppCompatActivity {
 
     }
 
-
-    private void displayMyRides(LatLng source, LatLng dest, String startTime, String date, int seats) throws IOException {
+    private void displayMyRides(int i,LatLng source, LatLng dest, String startTime, String date, int seats) throws IOException {
         myLinearLayout = (LinearLayout) findViewById(R.id.frameMyRides);
         Context context;
         TextView textview, textview1, textview2, textview3, textview4, textview5, textview6;
         LinearLayout innerLayout1,innerLayout2;
         CardView cardview;
         context = getApplicationContext();
-
-        final FirebaseUser user_auth = FirebaseAuth.getInstance().getCurrentUser();
-        findDis(source, dest);
 
         LayoutParams params = new LayoutParams(
                 LayoutParams.WRAP_CONTENT,
@@ -137,10 +143,6 @@ public class MyRides extends AppCompatActivity {
 
         cardview = new CardView(context);
         cardview.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-
-
-
-
         cardview.setRadius(15);
         cardview.setPadding(25, 25, 25, 25);
         cardview.setCardBackgroundColor(Color.WHITE);
@@ -151,7 +153,6 @@ public class MyRides extends AppCompatActivity {
         outerLayout = new LinearLayout(context);
         outerLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         outerLayout.setOrientation(LinearLayout.VERTICAL);
-
 
         textview3 = new TextView(context);
         params = new LayoutParams(
@@ -209,6 +210,7 @@ public class MyRides extends AppCompatActivity {
 
 
         Double ecoMetric=0.0;
+
 //        ecoMetDist = Math.sqrt((source.latitude - dest.latitude)*(source.latitude - dest.latitude)
 //                                + (source.longitude - dest.longitude)*(source.longitude - dest.longitude));
         ecoMetDist = getApproxDistance(source.latitude, source.longitude, dest.latitude, dest.longitude, 'k') * 1.1;
@@ -231,14 +233,6 @@ public class MyRides extends AppCompatActivity {
         String s = "You reduced " + df.format(ecoMetric) + "g of carbon emission with this trip";
         textview1.setText(s);
 
-//        button = new Button(context);
-//        button.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 3));
-//        button.setText("Request ride");
-
-
-
-
-
         innerLayout2.addView(textview5);
         innerLayout2.addView(textview6);
 
@@ -249,15 +243,6 @@ public class MyRides extends AppCompatActivity {
         myLinearLayout.addView(cardview);
 
 //        }
-    }
-
-    private void findDis(LatLng source, LatLng dest) {
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+Double.toString(source.latitude)+
-                ","+Double.toString(source.longitude)+"&destination="+Double.toString(dest.latitude)+","+
-                Double.toString(dest.longitude)+"&sensor=false&mode=driving&alternatives=true"+"&key="+getString(R.string.google_api_key);
-
-        Log.d("eco", url);
-        new MyRides.connectAsyncTask(url).execute();
     }
 
     private class connectAsyncTask extends AsyncTask<Void, Void, String> {
@@ -293,21 +278,68 @@ public class MyRides extends AppCompatActivity {
             if (result != null) {
                 Log.d("eco","result is null");
                 getDist(result);
+                display();
             }
         }
+    }
+
+    private void display() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference colRef = db.collection("AllRides").document(user_auth.getUid()).collection("Rides");
+        colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    QuerySnapshot coll = task.getResult();
+                    List<DocumentSnapshot> rides= coll.getDocuments();
+                    for(int i=0;i<rides.size();i++){
+                        Map<String,Object> data = rides.get(i).getData();
+
+                        Double lat = (Double) data.get("StartLat");
+                        Double lng = (Double) data.get("StartLon");
+                        LatLng source = new LatLng(lat, lng);
+
+                        lat = (Double) data.get("DestLat");
+                        lng = (Double) data.get("destLon");
+                        LatLng dest = new LatLng(lat, lng);
+
+
+                        String startTime = data.get("StartTime").toString();
+//                        String endTime = data.get("EndTime").toString();
+                        String date = data.get("date").toString();
+                        int seats = Integer.parseInt(data.get("totalNumberOfSeats").toString().trim());
+                        try {
+                            displayMyRides(i, source, dest, startTime, date, seats);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+
+                    Toast.makeText(MyRides.this,"Rides fetched successfully", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MyRides.this,"Failed to fetch ride", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void getDist(String result) {
         try {
             // Tranform the string into a json object
+            dist = new ArrayList();
+            // Tranform the string into a json object
             final JSONObject json = new JSONObject(result);
-            JSONArray routeArray = json.getJSONArray("routes");
-            JSONObject routes = routeArray.getJSONObject(0);
-
-            JSONArray legArr = routes.getJSONArray("legs");
-            JSONObject legs = legArr.getJSONObject(0);
-            JSONObject duration = legs.getJSONObject("distance");
-            ecoMetDist = Double.valueOf(duration.getString("value"));
+            JSONArray routeArray = json.getJSONArray("rows");
+            for(int i=0;i<reqCount;i++){
+                Log.d("url", "fo rloop");
+                JSONObject row = routeArray.getJSONObject(i);
+                JSONArray elements = row.getJSONArray("elements");
+                JSONObject element = elements.getJSONObject(i);
+                JSONObject duration = element.getJSONObject("distance");
+                Double temp = duration.getDouble("value");
+                dist.add(temp);
+            }
         } catch (Exception e) {
             Log.d("eco", "exception");
             e.printStackTrace();

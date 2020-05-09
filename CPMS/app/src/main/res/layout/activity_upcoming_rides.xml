@@ -38,6 +38,9 @@
             android:layout_margin="10dp"
             />
 
+
+
+
         <Button
             android:id="@+id/upcoming_end_trip"
             android:layout_width="match_parent"
@@ -47,6 +50,38 @@
             android:layout_margin="10dp"
             />
 
+        <Button
+            android:id="@+id/upcoming_live_tracking"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:text="Share Live Location"
+            android:layout_margin="10dp"
+            />
+
 
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="2dp"
+        android:layout_weight="1"
+        android:visibility="gone"
+        android:id="@+id/upcoming_buttons_passenger"
+        android:gravity="bottom">
+
+
+        <Button
+            android:id="@+id/upcoming_liveTracking_passenger"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:text="Start Tracking"
+            android:layout_margin="10dp"
+            />
+
+    </LinearLayout>
+
 </LinearLayout>
