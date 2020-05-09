@@ -3,6 +3,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import android.content.Context;
 import android.content.Intent;
 import android.location.Geocoder;
 import androidx.annotation.NonNull;
@@ -37,8 +38,8 @@ import java.util.Map;
 public class Upcoming_rides extends AppCompatActivity {
 
     TextView mRideDetails;
-    Button mStartTrip,mEndTrip;
-    LinearLayout mUpcomingButtons;
+    Button mStartTrip,mEndTrip,mTracking,mTrackingPassenger;
+    LinearLayout mUpcomingButtons,mUpcomingButtonsPassenger;
     private FirebaseFunctions mFunctions;
 
     private Task<String> endTrip(String text) {
@@ -104,7 +105,10 @@ public class Upcoming_rides extends AppCompatActivity {
         mRideDetails=(TextView) findViewById(R.id.upcoming_rideDetails);
         mStartTrip=(Button) findViewById(R.id.upcoming_start_trip);
         mEndTrip=(Button) findViewById(R.id.upcoming_end_trip);
+        mTracking=(Button) findViewById(R.id.upcoming_live_tracking);
+        mTrackingPassenger=(Button) findViewById(R.id.upcoming_liveTracking_passenger);
         mUpcomingButtons=(LinearLayout) findViewById(R.id.upcoming_buttons);
+        mUpcomingButtonsPassenger=(LinearLayout) findViewById(R.id.upcoming_buttons_passenger);
         mFunctions = FirebaseFunctions.getInstance();
 
         fetchDetails("dummy")
@@ -128,6 +132,9 @@ public class Upcoming_rides extends AppCompatActivity {
                             if(isDriver.equals("true"))
                             {
                                 mUpcomingButtons.setVisibility(View.VISIBLE);
+                            }
+                            else{
+                                mUpcomingButtonsPassenger.setVisibility(View.VISIBLE);
                             }
                         }catch (JSONException err){
                             Log.d("hakuna", err.toString());
@@ -179,6 +186,44 @@ public class Upcoming_rides extends AppCompatActivity {
 
                             }
                         });
+            }
+        });
+        mTracking.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String details = (String)mRideDetails.getText();
+                try {
+                    JSONObject jsonObject = new JSONObject(details);
+                    String rideID=jsonObject.get("rideId").toString();
+                    Intent serviceIntent = new Intent(DriverTrackingActivity.class.getName());
+                    serviceIntent.putExtra("rideID", rideID);
+    //                Context context;
+    //                context.startService(serviceIntent);
+                    startService(serviceIntent);
+
+                }catch (JSONException err){
+                    Log.d("hakuna", err.toString());
+                }
+                Log.d("details", details);
+//
+            }
+        });
+        mTrackingPassenger.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String details = (String)mRideDetails.getText();
+                try {
+                    JSONObject jsonObject = new JSONObject(details);
+                    String rideID=jsonObject.get("rideId").toString();
+                    Intent intent = new Intent(Upcoming_rides.this, PassengerTrackingActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("rideID",rideID);
+                    intent.putExtras(bundle);
+                    Log.d("bla", "inRideRequest");
+                    startActivity(intent);
+                }catch (JSONException err){
+                    Log.d("hakuna", err.toString());
+                }
             }
         });
 
