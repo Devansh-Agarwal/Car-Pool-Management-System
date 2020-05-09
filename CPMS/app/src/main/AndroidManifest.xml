@@ -7,13 +7,20 @@
          Google Maps Android API v2, but you must specify either coarse or fine
          location permissions for the 'MyLocation' functionality.
     -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION_LOCATION" />
 
+
     <permission
         android:name="com.example.mapexdemo.permission.MAPS_RECEIVE"
         android:protectionLevel="signature" />
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_GPS"/>
+    <uses-permission android:name="android.permission.SEND_SMS"/>
+
 
     <application
         android:allowBackup="true"
@@ -50,6 +57,7 @@
         <activity android:name=".RideOfferActivity" />
         <activity android:name=".RideRequestActivity" />
         <activity android:name=".HelpActivity" />
+	    <activity android:name=".SosActivity" />
 
         <service android:name=".MyFirebaseMessagingService">
             <intent-filter>

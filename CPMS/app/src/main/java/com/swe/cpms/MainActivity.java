@@ -31,7 +31,7 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button mDriver, mRider,mLogout,mView_profile,mView_upcoming, mMyRides, mHelpcentre;
+    private Button mDriver, mRider,mLogout,mView_profile,mView_upcoming, mMyRides, mHelpcentre, mSos;
 
     public static int getValue(String key, Context context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -39,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
     }
     Context homeActivity;
 
+
+
+  
 
 
     @Override
@@ -92,10 +95,11 @@ public class MainActivity extends AppCompatActivity {
         mView_upcoming=(Button) findViewById(R.id.view_upcoming);
         mMyRides = findViewById(R.id.my_rides);
         mHelpcentre = (Button) findViewById(R.id.view_help_centre);
+        mSos = (Button)  findViewById(R.id.view_sos);
 
 
-        String temp="Upcoming Rides "+"("+ getValue("upcoming_rides",this)+")";
-        mView_upcoming.setText(temp);
+       // String temp="Upcoming Rides "+"("+ getValue("upcoming_rides",this)+")";
+        mView_upcoming.setText("Upcoming Rides");
         mRider.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -127,14 +131,8 @@ public class MainActivity extends AppCompatActivity {
         mView_upcoming.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(getValue("upcoming_rides",homeActivity)==1) {
                     Intent intent = new Intent(MainActivity.this, Upcoming_rides.class);
                     startActivity(intent);
-                }
-                else
-                {
-                    Toast.makeText(homeActivity, "You have no upcoming Rides", Toast.LENGTH_SHORT).show();
-                }
             }
         });
 
@@ -154,6 +152,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, HelpActivity.class);
+                startActivity(intent);
+//                finish();
+//                return;
+            }
+        });
+        mSos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SosActivity.class);
                 startActivity(intent);
 //                finish();
 //                return;

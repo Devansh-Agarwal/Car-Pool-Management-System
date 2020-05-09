@@ -60,4 +60,6 @@ dependencies {
 //    implementation 'google.maps.geometry.poly'
 
 
+    implementation 'com.android.support:support-v4:20.0.+'
+
 }
