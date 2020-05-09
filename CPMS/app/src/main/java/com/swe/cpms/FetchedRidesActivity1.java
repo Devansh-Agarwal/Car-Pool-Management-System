@@ -55,6 +55,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -67,21 +68,30 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class FetchedRidesActivity extends AppCompatActivity {
+public class FetchedRidesActivity1 extends AppCompatActivity {
 
     LinearLayout myLinearLayout, outerLayout;
     CardView cardview;
+
     LatLng reqSource, reqDest;
     String reqTime, reqDate;
     int reqSeats;
+
+    LatLng offSource, offDest;
+    String offTime, offDate;
+    int offSeats, offPassenger;
+
+    int reqCount=0;
+
     final FirebaseUser user_auth = FirebaseAuth.getInstance().getCurrentUser();
-    long timeDiff;
+
+    ArrayList<Double> timeDiff;
     Polyline polyline;
     List <LatLng> routePoints;
 
     Geocoder geocoder;
     List<Address> addresses;
-
+    boolean sleep=true;
     Bundle bundle;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +100,8 @@ public class FetchedRidesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_fetched_rides);
 
 
-        geocoder = new Geocoder(FetchedRidesActivity.this ,Locale.getDefault());
+        geocoder = new Geocoder(FetchedRidesActivity1.this ,Locale.getDefault());
 
-        Log.d("bla", "before database");
         bundle = getIntent().getExtras();
 
         String lat = bundle.getString("finalSourceLat");
@@ -104,79 +113,36 @@ public class FetchedRidesActivity extends AppCompatActivity {
         lng = bundle.getString("finalDestLng");
         reqDest = new LatLng(Double.valueOf(lat), Double.valueOf(lng));
 
-        reqTime = bundle.getString("time");
+        reqTime = bundle.getString("startTime");
         reqDate = bundle.getString("date");
         reqSeats = Integer.valueOf(bundle.getString("seats"));
 
-        Log.d("bla", "before database");
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference  colRef = db.collection("OfferedRides");
 
         colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onComplete(@ NonNull Task<QuerySnapshot> task) {
-                if(task.isSuccessful()){
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
                     QuerySnapshot coll = task.getResult();
-                    List<DocumentSnapshot> rides= coll.getDocuments();
+                    List<DocumentSnapshot> rides = coll.getDocuments();
 
-                    int flag=0;
-                    for(int i=0;i<rides.size();i++){
-                        Map<String,Object> data = rides.get(i).getData();
+                    String origins = "";
+                    int flag = 0;
+                    reqCount = rides.size();
+                    for (int i = 0; i < rides.size(); i++) {
+                        Map<String, Object> data = rides.get(i).getData();
 
                         Double lat = Double.valueOf(data.get("StartLat").toString());
                         Double lng = (Double) data.get("StartLon");
 
-                        LatLng source = new LatLng(lat, lng);
-                        timeFun(source, reqSource);
-                        Log.d("rideId", rides.get(i).getId());
-
-                        lat = (Double) data.get("DestLat");
-                        lng = (Double) data.get("destLon");
-                        LatLng dest = new LatLng(lat, lng);
-
-                        String time = data.get("StartTime").toString();
-                        String date = data.get("date").toString();
-                        int seats = Integer.parseInt(data.get("totalNumberOfSeats").toString().trim());
-
-                        boolean ans = checkIfMatches(source, dest, time, date, seats);
-                        if(ans) {
-                            flag = 1;
-                            try {
-                                displayDriver(source, dest, time, date, seats, data.get("driverUid").toString());
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            if (seats - reqSeats == 0) {
-                                //remove the ride from the table
-
-                                delDocOfferRides(data.get("driverUid").toString(), rides.get(i).getId());
-                                Log.d("rideId", rides.get(i).getId());
-//                                delDoc(rides.get(i));
-
-                            } else {
-                                //update table
-                                UpdDocOfferRides(data.get("driverUid").toString(), rides.get(i).getId(), seats - reqSeats);
-                            }
-                            upDocAllRidesDriver(data.get("driverUid").toString(), rides.get(i).getId(),seats - reqSeats, data.get("passengerUid"), reqSeats);
-                            upDocAllRidesPassenger(data.get("driverUid").toString(), rides.get(i).getId(), reqDate, reqTime, Integer.toString(seats + reqSeats), reqSource, reqDest);
-                            addIdToMatchedRidesTable(rides.get(i).getId(), data.get("driverUid").toString());
-                            break;
-                        }
-                    }
-                    if(flag==0){
-                        TextView tv;
-                        tv = new TextView(getApplicationContext());
-                        tv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-                        tv.setGravity(Gravity.CENTER);
-                        tv.setText("No drivers available");
-                        myLinearLayout = (LinearLayout) findViewById(R.id.frame);
-                        myLinearLayout.addView(tv);
+                        if(i!=0)origins+="|";
+                        origins+=data.get("StartLat").toString()+","+data.get("StartLon").toString();
                     }
 
-                }
-                else{
-                    Toast.makeText(FetchedRidesActivity.this,"Collection query failed",Toast.LENGTH_SHORT).show();
-                    Log.d("hakuna", "Collection query failed");
+                    String destinationUrl = Double.toString(reqSource.latitude)+","+Double.toString(reqSource.longitude);
+                    String url="https://maps.googleapis.com/maps/api/distancematrix/json?origins="+origins+"&destinations="+destinationUrl+"&key="+getString(R.string.google_api_key);
+                    new FetchedRidesActivity1.connectAsyncTask(url).execute();
                 }
             }
         });
@@ -219,11 +185,14 @@ public class FetchedRidesActivity extends AppCompatActivity {
             }
         });
     }
-    private void UpdDocOfferRides(String driverUid, String rideId, int numberOfSeats) {
+    private void UpdDocOfferRides(String driverUid, String rideId, int numberOfSeats, int numberOfPeople) {
         CollectionReference collRef = FirebaseFirestore.getInstance()
                 .collection("OfferedRides");
+        Map<String, Object> ride = new HashMap<>();
+        ride.put("totalNumberOfSeats", Integer.toString(numberOfSeats));
+        ride.put("numberOfPeople", Integer.toString(numberOfPeople));
         collRef.document(rideId)
-                .update("totalNumberOfSeats", Integer.toString(numberOfSeats))
+                .update(ride)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -271,22 +240,22 @@ public class FetchedRidesActivity extends AppCompatActivity {
             ride.put("passengerUid", FieldValue.arrayUnion(user_auth.getUid()));
         }
         docRef
-            .update(ride)
-            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Log.d("hakuna", "All Rides successfully updated!");
-                }
-            })
-            .addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.w("hakuna", "Error updating All Rides", e);
-                }
-            });
+                .update(ride)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("hakuna", "All Rides successfully updated!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("hakuna", "Error updating All Rides", e);
+                    }
+                });
     }
 
-    private void upDocAllRidesPassenger(String driverId, String rideId, String date, String time, String seats, LatLng finalSource, LatLng finalDest) {
+    private void upDocAllRidesPassenger(String driverId, String rideId, String date, String time, String seats, LatLng finalSource, LatLng finalDest, String passengers) {
         DocumentReference docRef = FirebaseFirestore.getInstance().collection("AllRides").document(user_auth.getUid()).collection("Rides").document(rideId);
         Map<String, Object> ride = new HashMap<>();
         ride.put("date", date);
@@ -300,37 +269,40 @@ public class FetchedRidesActivity extends AppCompatActivity {
         ride.put("isDriver", false);
         ride.put("driverUid", driverId);
         ride.put("passengerUid", null);
-        ride.put("numberOfPeople",seats);
+        ride.put("numberOfPeople",passengers);
         docRef.
-            set(ride)
-            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Log.d("hakuna", "DocumentSnapshot successfully written!");
+                set(ride)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("hakuna", "DocumentSnapshot successfully written!");
 //                    Toast.makeText(RideOfferActivity.this,"Ride successfully stored in AllRides database", Toast.LENGTH_SHORT).show();
-                }
-            })
-            .addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.w("hakuna", "Error writing document", e);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("hakuna", "Error writing document", e);
 //                    Toast.makeText(RideOfferActivity.this,"Ride storage unsuccessful in AllRides", Toast.LENGTH_SHORT).show();
-                }
-            });
+                    }
+                });
     }
-    private void displayDriver(LatLng offSource, LatLng offDest, String offTime, String offDate, int offSeats, String uid) throws IOException {
+    private void displayDriver(String uid) throws IOException {
         myLinearLayout = (LinearLayout) findViewById(R.id.frame);
         Context context;
         TextView textview, textview1, textview2, textview3, textview4, textview5, textview6;
         LinearLayout innerLayout1,innerLayout2;
 
         context = getApplicationContext();
-        String fare = bundle.getString("fare");
-
+//        String fare = bundle.getString("fare");
+        double approxDistance = getApproxDistance(reqSource.latitude, reqSource.longitude, reqDest.latitude, reqDest.longitude, 'k');
+        double fare = 0.25 * 4 * reqSeats * approxDistance;
+        DecimalFormat df = new DecimalFormat("#.##");
+        fare = Double.valueOf(df.format(fare));
         TextView mFare = (TextView)findViewById(R.id.fare);
         TextView eFare = (TextView)findViewById(R.id.fareName);
         eFare.setText("Estimated Fare");
-        mFare.setText(fare);
+        mFare.setText("Rs." + Double.toString( fare));
 
         final String[] name = new String[1];
         final int[] rating = new int[1];
@@ -483,45 +455,47 @@ public class FetchedRidesActivity extends AppCompatActivity {
 //        }
     }
 
-    private boolean checkIfMatches(LatLng offSource, LatLng offDest, String offTime, String offDate, int offSeats) {
-//        timeFun(offSource, reqSource);//calculates time taken from driver start point to rider start point
+    private boolean checkIfMatches(int i) {
         try {
-            if(routePoints==null){
-                Log.d("bla", "even after while its null");
-            }
-            else{
-                Log.d("bla", "yess");
-            }
             SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
             String ts = offDate + " " + offTime;
+            Log.d("async", "offer "+ts);
+
             Date date = df.parse(ts);
             long epochSrc = date.getTime()/1000;
 
             ts = reqDate + " " + reqTime;
+            Log.d("async", "request "+ts);
             date = df.parse(ts);
             long epochDest = date.getTime()/1000;
 
             long actualTimeDiff = epochDest - epochSrc;
+            Log.d("async", Long.toString(epochDest));
+            Log.d("async", Long.toString(epochSrc));
+            Log.d("async", Long.toString(actualTimeDiff));
 
-            if((reqSeats <= offSeats) && (Math.abs(actualTimeDiff - timeDiff))<300 &&
-                    PolyUtil.isLocationOnEdge(reqSource, routePoints, true, 50.0) &&
-                    PolyUtil.isLocationOnEdge(reqDest, routePoints, true, 50.0)){
+            boolean check1, check2, check3;
+            Log.d("async", Double.toString(reqSource.latitude)+" "+Double.toString(reqSource.longitude));
+            check1 = PolyUtil.isLocationOnPath(reqSource, routePoints, true, 50);
+            Log.d("async", Double.toString(reqDest.latitude)+" "+Double.toString(reqDest.longitude));
+            check2 = PolyUtil.isLocationOnPath(reqDest, routePoints, true, 50);
+//                LatLng l = new LatLng(17.06019, 79.28231);
+            check3 = PolyUtil.isLocationOnPath(offSource, routePoints, true, 50) ;
+            Log.d("async", Double.toString(offSource.latitude)+" "+Double.toString(offSource.longitude));
+
+            if(check1)Log.d("sync", "source lies on route");
+            if(check2)Log.d("sync", "dest lies on route");
+            if(check3)Log.d("sync", "dont know why");
+
+            if((reqSeats <= offSeats) && (Math.abs(actualTimeDiff - timeDiff.get(i)))<=300 && check1 && check2){
+                Log.d("async", "matched");
                 return true;
             }
         } catch (ParseException e) {
             e.printStackTrace();
         }
         return false;
-    }
-
-    void  timeFun(LatLng src, LatLng dest){
-        String url= "https://maps.googleapis.com/maps/api/directions/json?origin="+Double.toString(src.latitude)+
-                ","+Double.toString(src.longitude)+"&destination="+Double.toString(dest.latitude)+","+
-                Double.toString(dest.longitude)+"&sensor=false&mode=driving&alternatives=true"+"&key="+getString(R.string.google_api_key);
-
-        new FetchedRidesActivity.connectAsyncTask(url).execute();
-//        return time;
     }
 
     //used for polyline
@@ -537,9 +511,9 @@ public class FetchedRidesActivity extends AppCompatActivity {
         protected void onPreExecute() {
             // TODO Auto-generated method stub
             super.onPreExecute();
-            progressDialog.setMessage("Fetching route, Please wait...");
-            progressDialog.setIndeterminate(true);
-            progressDialog.show();
+//            progressDialog.setMessage("Fetching route, Please wait...");
+//            progressDialog.setIndeterminate(true);
+//            progressDialog.show();
         }
 
         @Override
@@ -552,33 +526,116 @@ public class FetchedRidesActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            progressDialog.hide();
-
+//            progressDialog.hide();
             if (result != null) {
-                getTimeAndPath(result);
+//                getTimeAndPath(result);
+                matchingAlgo(result);
             }
         }
     }
 
+    private void matchingAlgo(String result) {
+        getTimeAndPath(result);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference  colRef = db.collection("OfferedRides");
+
+        colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@ NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    QuerySnapshot coll = task.getResult();
+                    List<DocumentSnapshot> rides= coll.getDocuments();
+
+                    int flag=0;
+                    for(int i=0;i<rides.size();i++){
+                        Map<String,Object> data = rides.get(i).getData();
+
+                        Double lat = Double.valueOf(data.get("StartLat").toString());
+                        Double lng = (Double) data.get("StartLon");
+
+                        offSource = new LatLng(lat, lng);
+//                        timeFun(source, reqSource);
+                        lat = (Double) data.get("DestLat");
+                        lng = (Double) data.get("destLon");
+                        offDest = new LatLng(lat, lng);
+
+                        offTime = data.get("StartTime").toString();
+                        offDate = data.get("date").toString();
+                        offSeats = Integer.parseInt(data.get("totalNumberOfSeats").toString().trim());
+                        offPassenger = Integer.parseInt(data.get("numberOfPeople").toString().trim());
+                        routePoints = new ArrayList<>();
+                        List<Object> locations = (List<Object>) data.get("routePoints");
+                        if(locations!=null) {
+                            for (Object locationObj : locations) {
+                                Map<String, Object> location = (Map<String, Object>) locationObj;
+                                LatLng latLng = new LatLng((Double) location.get("latitude"), (Double) location.get("longitude"));
+                                routePoints.add(latLng);
+                            }
+                        }
+//                        routePoints = (List) data.get("routePoints");
+                        boolean ans = checkIfMatches(i);
+                        if(ans) {
+                            flag = 1;
+                            try {
+                                displayDriver(data.get("driverUid").toString());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            if (offSeats - reqSeats == 0) {
+                                //remove the ride from the table
+
+                                delDocOfferRides(data.get("driverUid").toString(), rides.get(i).getId());
+//                                delDoc(rides.get(i));
+
+                            } else {
+                                //update table
+                                UpdDocOfferRides(data.get("driverUid").toString(), rides.get(i).getId(), offSeats - reqSeats, offPassenger + reqSeats);
+                            }
+                            upDocAllRidesDriver(data.get("driverUid").toString(), rides.get(i).getId(),offSeats - reqSeats, data.get("passengerUid"), offPassenger + reqSeats);
+                            upDocAllRidesPassenger(data.get("driverUid").toString(), rides.get(i).getId(), reqDate, reqTime, Integer.toString(offSeats - reqSeats), reqSource, reqDest,  Integer.toString(offPassenger + reqSeats));
+                            addIdToMatchedRidesTable(rides.get(i).getId(), data.get("driverUid").toString());
+                            break;
+                        }
+                    }
+                    if(flag==0){
+                        TextView tv;
+                        tv = new TextView(getApplicationContext());
+                        tv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+                        tv.setGravity(Gravity.CENTER);
+                        tv.setText("No drivers available");
+                        myLinearLayout = (LinearLayout) findViewById(R.id.frame);
+                        myLinearLayout.addView(tv);
+                    }
+
+                }
+                else{
+                    Toast.makeText(FetchedRidesActivity1.this,"Collection query failed",Toast.LENGTH_SHORT).show();
+                    Log.d("hakuna", "Collection query failed");
+                }
+            }
+        });
+    }
+
     private void getTimeAndPath(String result) {
         try {
+            timeDiff = new ArrayList();
             // Tranform the string into a json object
             final JSONObject json = new JSONObject(result);
-            JSONArray routeArray = json.getJSONArray("routes");
-            JSONObject routes = routeArray.getJSONObject(0);
+            JSONArray routeArray = json.getJSONArray("rows");
+            for(int i=0;i<reqCount;i++){
+                JSONObject row = routeArray.getJSONObject(i);
+                JSONArray elements = row.getJSONArray("elements");
+                JSONObject element = elements.getJSONObject(0);
+                JSONObject duration = element.getJSONObject("duration");
+                Double temp = duration.getDouble("value");
+                timeDiff.add(temp);
+            }
 
-            JSONArray legsArray = routes.getJSONArray("legs");
-            JSONObject legs = legsArray.getJSONObject(0);
-            JSONObject duration = legs.getJSONObject("duration");
-            timeDiff = Long.valueOf(duration.getString("value"));
-
-            Log.d("bla", Long.toString(timeDiff));
-
-            JSONObject overviewPolylines = routes
-                    .getJSONObject("overview_polyline");
-
-            String encodedString = overviewPolylines.getString("points");
-            routePoints = decodePoly(encodedString);
+//            JSONObject overviewPolylines = routes
+//                    .getJSONObject("overview_polyline");
+//
+//            String encodedString = overviewPolylines.getString("points");
+//            routePoints = decodePoly(encodedString);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -658,4 +715,27 @@ public class FetchedRidesActivity extends AppCompatActivity {
             return "";
         }
     }
+
+    private double getApproxDistance(double lat1, double lon1, double lat2, double lon2, char unit) {
+        double theta = lon1 - lon2;
+        double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+        if (unit == 'K') {
+            dist = dist * 1.609344;
+        } else if (unit == 'N') {
+            dist = dist * 0.8684;
+        }
+        return (dist);
+    }
+
+    private double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
+    private double rad2deg(double rad) {
+        return (rad * 180.0 / Math.PI);
+    }
+
 }

@@ -1,0 +1,52 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:orientation="horizontal"
+        android:layout_margin="2dp"
+        >
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:id="@+id/upcoming_rideDetails"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="2dp"
+        android:layout_weight="1"
+        android:visibility="gone"
+        android:id="@+id/upcoming_buttons"
+        android:gravity="bottom">
+
+
+        <Button
+            android:id="@+id/upcoming_start_trip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:text="Start Trip"
+            android:layout_margin="10dp"
+            />
+
+        <Button
+            android:id="@+id/upcoming_end_trip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:text="End Trip"
+            android:layout_margin="10dp"
+            />
+
+
+    </LinearLayout>
+</LinearLayout>
