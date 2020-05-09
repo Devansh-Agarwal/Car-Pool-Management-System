@@ -98,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
         mSos = (Button)  findViewById(R.id.view_sos);
 
 
-        String temp="Upcoming Rides "+"("+ getValue("upcoming_rides",this)+")";
-        mView_upcoming.setText(temp);
+       // String temp="Upcoming Rides "+"("+ getValue("upcoming_rides",this)+")";
+        mView_upcoming.setText("Upcoming Rides");
         mRider.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -131,14 +131,8 @@ public class MainActivity extends AppCompatActivity {
         mView_upcoming.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(getValue("upcoming_rides",homeActivity)==1) {
                     Intent intent = new Intent(MainActivity.this, Upcoming_rides.class);
                     startActivity(intent);
-                }
-                else
-                {
-                    Toast.makeText(homeActivity, "You have no upcoming Rides", Toast.LENGTH_SHORT).show();
-                }
             }
         });
 

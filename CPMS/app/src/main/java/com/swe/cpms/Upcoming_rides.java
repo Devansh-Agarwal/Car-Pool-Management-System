@@ -121,14 +121,24 @@ public class Upcoming_rides extends AppCompatActivity {
                             Log.e("hakuna", "fetching upcoming ride details not successful: "+ task.getException() );
                         }
                         Log.d("hakuna", "fetching upcoming ride details successful"+task.getResult());
-                        mRideDetails.setText(task.getResult());
+
                         try {
                             JSONObject jsonObject = new JSONObject(task.getResult());
-                            String isDriver=jsonObject.get("isDriver").toString();
-                            if(isDriver.equals("true"))
+                            String isValid=jsonObject.get("isValid").toString();
+                            if(isValid.equals("false"))
                             {
-                                mUpcomingButtons.setVisibility(View.VISIBLE);
+                                    mRideDetails.setText("you have no upcoming rides");
                             }
+                            else
+                            {
+                                mRideDetails.setText(task.getResult());
+                                String isDriver=jsonObject.get("isDriver").toString();
+                                if(isDriver.equals("true"))
+                                {
+                                    mUpcomingButtons.setVisibility(View.VISIBLE);
+                                }
+                            }
+
                         }catch (JSONException err){
                             Log.d("hakuna", err.toString());
                         }
