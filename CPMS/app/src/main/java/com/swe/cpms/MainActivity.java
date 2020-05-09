@@ -30,13 +30,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
-    private Button mDriver, mRider,mLogout,mView_profile,mView_upcoming;
+
+    private Button mDriver, mRider,mLogout,mView_profile,mView_upcoming, mMyRides, mHelpcentre;
 
     public static int getValue(String key, Context context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         return preferences.getInt(key,0);
     }
     Context homeActivity;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +90,9 @@ public class MainActivity extends AppCompatActivity {
         mLogout=(Button) findViewById(R.id.log_out);
         mView_profile=(Button) findViewById(R.id.view_profile);
         mView_upcoming=(Button) findViewById(R.id.view_upcoming);
+        mMyRides = findViewById(R.id.my_rides);
+        mHelpcentre = (Button) findViewById(R.id.view_help_centre);
+
 
        // String temp="Upcoming Rides "+"("+ getValue("upcoming_rides",this)+")";
         mView_upcoming.setText("Upcoming Rides");
@@ -117,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
 //                return;
             }
         });
+
         mView_upcoming.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,6 +131,29 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
             }
         });
+
+
+
+        mMyRides.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, MyRides.class);
+                  startActivity(intent);
+//                finish();
+//                return;
+            }
+        });
+
+        mHelpcentre.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, HelpActivity.class);
+                startActivity(intent);
+//                finish();
+//                return;
+            }
+        });
+
         mLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

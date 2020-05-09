@@ -97,7 +97,7 @@ public class RideRequestActivity extends FragmentActivity implements OnMapReadyC
         mFind = (Button) findViewById(R.id.find);
 
         if(!Places.isInitialized()){
-            Places.initialize(getApplicationContext(), getString(R.string.google_api_key));
+            Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
         }
 
         mSource.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
@@ -195,10 +195,23 @@ public class RideRequestActivity extends FragmentActivity implements OnMapReadyC
                     Toast.makeText(RideRequestActivity.this, "Enter the number of seats", Toast.LENGTH_SHORT).show();
                 }
                 else{
-                    Intent intent = new Intent(RideRequestActivity.this, FetchedRidesActivity.class);
+                    Intent intent = new Intent(RideRequestActivity.this, FetchedRidesActivity1.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("fare","250");
+                    bundle.putString("finalSourceLat", Double.toString(finalSource.latitude));
+                    bundle.putString("finalSourceLng", Double.toString(finalSource.longitude));
+                    bundle.putString("finalDestLat", Double.toString(finalDest.latitude));
+                    bundle.putString("finalDestLng", Double.toString(finalDest.longitude));
+                    bundle.putString("startTime", time);
+                    bundle.putString("date", date);
+                    bundle.putString("seats", seats);
+                    Log.d("bla", "inRideRequest");
+                    intent.putExtras(bundle);
+                    Log.d("bla", "inRideRequest");
                     startActivity(intent);
-                    finish();
-                    return;
+                    Log.d("bla", "inRideRequest1");
+//                    finish();
+//                    return;
                 }
             }
         });
