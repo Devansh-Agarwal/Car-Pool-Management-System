@@ -21,6 +21,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <activity android:name=".Upcoming_rides"></activity>
         <activity android:name=".FetchedRidesActivity1"></activity>
         <activity android:name=".ViewProfile" />
         <activity android:name=".MakeProfile" />
@@ -32,6 +34,14 @@
         <activity android:name=".RideRequestActivity" />
         <activity android:name=".HelpActivity" />
 
+
+        <service android:name=".MyFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
