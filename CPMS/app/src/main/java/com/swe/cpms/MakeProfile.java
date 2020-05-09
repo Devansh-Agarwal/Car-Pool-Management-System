@@ -145,6 +145,7 @@ public class MakeProfile extends AppCompatActivity {
                 user.put("uid",user_auth.getUid());
                 user.put("avg_rating",0);
                 user.put("number_of_ratings",0);
+                user.put("phone",user_auth.getPhoneNumber());
 
 
 // Add a new document with a generated ID
