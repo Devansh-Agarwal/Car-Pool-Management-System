@@ -31,7 +31,7 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button mDriver, mRider,mLogout,mView_profile,mView_upcoming, mMyRides, mHelpcentre, ,mSos;
+    private Button mDriver, mRider,mLogout,mView_profile,mView_upcoming, mMyRides, mHelpcentre, mSos;
 
     public static int getValue(String key, Context context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
