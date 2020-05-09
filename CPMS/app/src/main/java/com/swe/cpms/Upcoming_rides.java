@@ -28,6 +28,7 @@ import com.google.firebase.functions.FirebaseFunctionsException;
 import com.google.firebase.functions.HttpsCallableResult;
 import com.google.gson.JsonObject;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
@@ -125,9 +126,51 @@ public class Upcoming_rides extends AppCompatActivity {
                             Log.e("hakuna", "fetching upcoming ride details not successful: "+ task.getException() );
                         }
                         Log.d("hakuna", "fetching upcoming ride details successful"+task.getResult());
-                        mRideDetails.setText(task.getResult());
+
                         try {
+                            Log.d("json", "try");
                             JSONObject jsonObject = new JSONObject(task.getResult());
+
+                            String display = "";
+                            if(jsonObject!=null){
+                                if(jsonObject.has("rideId")) {
+                                    display += "Ride ID: ";
+                                    display += (String) jsonObject.get("rideId");
+                                    display += "\n";
+                                }
+
+                                Log.d("json", "here");
+
+                                if(jsonObject.has("driver")){
+                                    JSONObject jsonDriver = (JSONObject)jsonObject.get("driver");
+                                    Log.d("json", "7");
+                                    if(jsonDriver.has("name")){
+                                        display+="\nDriver Name: ";
+                                        display+=(String)jsonObject.get("name");
+                                    }
+
+                                    if(jsonDriver.has("phone")){
+                                        display+="\nContact No. :";
+                                        display+=(String)jsonObject.get("phone");
+                                    }
+                                }
+
+
+                                if(jsonObject.has("passengers")){
+                                    JSONArray passengers = (JSONArray) jsonObject.get("passengers");
+                                    Log.d("json","passengers is not null");
+                                    int sizeArr = ((List)passengers).size();
+
+                                    for(int i=0;i<sizeArr;i++){
+                                        JSONObject pass = (JSONObject) passengers.get(i);
+                                        if(pass.has("name"))display+="\nPassenger"+Integer.toString(i)+" Name: "+(String)jsonObject.get("name");
+                                        if(pass.has("phone"))display+="\nPassenger"+Integer.toString(i)+" Contact No.: "+(String)jsonObject.get("phone");
+                                    }
+                                }
+                            }
+
+                            mRideDetails.setText(display);
+
                             String isDriver=jsonObject.get("isDriver").toString();
                             if(isDriver.equals("true"))
                             {
