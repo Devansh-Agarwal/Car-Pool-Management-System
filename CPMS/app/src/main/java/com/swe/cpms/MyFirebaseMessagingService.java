@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -24,38 +25,49 @@ import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     FirebaseUser user_auth = FirebaseAuth.getInstance().getCurrentUser();
 
+    public static void setValue(String key, int value, Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt(key, value);
+        editor.commit();
+    }
+    static void updateMyActivity(Context context, String message) {
+
+        Intent intent = new Intent("notification");
+
+        //put whatever data you want to send, if any
+        intent.putExtra("message", message);
+
+        //send broadcast
+        context.sendBroadcast(intent);
+    }
+
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        if(remoteMessage.getNotification().getTitle().equals("Upcoming Carpool Ride")) {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putInt("upcoming_rides", preferences.getInt("upcoming_rides", 0)+1);
-            editor.commit();
+        Log.d("hakuna","This is a test message for notification");
+        if(Objects.equals(Objects.requireNonNull(remoteMessage.getNotification()).getTitle(), "Upcoming Carpool Ride")) {
+            Log.d("hakuna", "onMessageReceived: Upcoming ride +1 executed");
+           setValue("upcoming_rides",1,this);
+           updateMyActivity(this,"carpool created");
+
         }
-        else if(remoteMessage.getNotification().getTitle().equals("Carpool Ride Ended"))
+        else if(Objects.equals(remoteMessage.getNotification().getTitle(), "Carpool Ride Ended"))
         {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putInt("upcoming_rides", preferences.getInt("upcoming_rides", 1)-1);
-            editor.commit();
+            Log.d("hakuna", "onMessageReceived: Upcoming ride -1 executed");
+          setValue("upcoming_rides",0,this);
+            updateMyActivity(this,"carpool ended");
         }
-        Log.d("MSG",remoteMessage.getNotification().getBody());
+        Log.d("hakuna", Objects.requireNonNull(remoteMessage.getNotification().getTitle()));
         shownotification(remoteMessage.getNotification());
     }
 
-//    FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(MainActivity.this,new OnSuccessListener<InstanceIdResult>() {
-//        @Override
-//        public void onSuccess(InstanceIdResult instanceIdResult) {
-//            String newToken = instanceIdResult.getToken();
-//            Toast.makeText(MainActivity.this, newToken, Toast.LENGTH_SHORT).show();
-//        }
-//    });
 
 
     @Override

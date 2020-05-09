@@ -1,7 +1,10 @@
 package com.swe.cpms;
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -29,10 +32,17 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
     private Button mDriver, mRider,mLogout,mView_profile,mView_upcoming;
 
+    public static int getValue(String key, Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return preferences.getInt(key,0);
+    }
+    Context homeActivity;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        homeActivity= this;
         FirebaseInstanceId.getInstance().getInstanceId()
                 .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
                     @Override
@@ -77,9 +87,8 @@ public class MainActivity extends AppCompatActivity {
         mLogout=(Button) findViewById(R.id.log_out);
         mView_profile=(Button) findViewById(R.id.view_profile);
         mView_upcoming=(Button) findViewById(R.id.view_upcoming);
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        preferences.getInt("upcoming_rides", 0);
-        String temp="Upcoming Rides "+"("+ preferences.getInt("upcoming_rides", 0)+")";
+
+        String temp="Upcoming Rides "+"("+ getValue("upcoming_rides",this)+")";
         mView_upcoming.setText(temp);
         mRider.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,10 +120,14 @@ public class MainActivity extends AppCompatActivity {
         mView_upcoming.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, Upcoming_rides.class);
-                startActivity(intent);
-//                finish();
-//                return;
+                if(getValue("upcoming_rides",homeActivity)==1) {
+                    Intent intent = new Intent(MainActivity.this, Upcoming_rides.class);
+                    startActivity(intent);
+                }
+                else
+                {
+                    Toast.makeText(homeActivity, "You have no upcoming Rides", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         mLogout.setOnClickListener(new View.OnClickListener() {
@@ -127,6 +140,34 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            // Extract data included in the Intent
+            String message = intent.getStringExtra("message");
+            String temp="Upcoming Rides "+"("+ getValue("upcoming_rides",homeActivity)+")";
+            mView_upcoming.setText(temp);
+        }
+    };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.registerReceiver(mMessageReceiver, new IntentFilter("notification"));
+    }
+
+    //Must unregister onPause()
+    @Override
+    protected void onPause() {
+        super.onPause();
+        this.unregisterReceiver(mMessageReceiver);
+    }
+
+
+    //This is the handler that will manager to process the broadcast intent
+
 
 
 }

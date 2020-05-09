@@ -21,16 +21,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.api.Distribution;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
+
 import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.functions.FirebaseFunctionsException;
 import com.google.firebase.functions.HttpsCallableResult;
@@ -50,44 +41,57 @@ public class Upcoming_rides extends AppCompatActivity {
     LinearLayout mUpcomingButtons;
     private FirebaseFunctions mFunctions;
 
-    private Task<String> endTrip() {
+    private Task<String> endTrip(String text) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("text", text);
+        data.put("push", true);
         return mFunctions
                 .getHttpsCallable("endTrip")
-                .call()
+                .call(data)
                 .continueWith(new Continuation<HttpsCallableResult, String>() {
                     @Override
                     public String then(@NonNull Task<HttpsCallableResult> task) throws Exception {
-                        String result = (String) task.getResult().getData();
-                        return result;
+                        Object result= task.getResult().getData();
+                        Log.d("hakuna", "then: the value of object is ");
+                        return "dfsdfsfs";
                     }
 
                 });
     }
 
-    private Task<String> startTrip() {
+    private Task<String> startTrip(String text) {
         // Create the arguments to the callable function.
+        Map<String, Object> data = new HashMap<>();
+        data.put("text", text);
+        data.put("push", true);
         return mFunctions
                 .getHttpsCallable("startTrip")
-                .call()
+                .call(data)
                 .continueWith(new Continuation<HttpsCallableResult, String>() {
                     @Override
                     public String then(@NonNull Task<HttpsCallableResult> task) throws Exception {
-                        String result = (String) task.getResult().getData();
-                        return result;
+                        Object result= task.getResult().getData();
+                        Log.d("hakuna", "then: the value of object is ");
+                        return "dfsdfsfs";
                     }
                 });
     }
 
-    private Task<String> fetchDetails() {
+    private Task<String> fetchDetails(String text) {
         // Create the arguments to the callable function.
+        Map<String, Object> data = new HashMap<>();
+        data.put("text", text);
+        data.put("push", true);
         return mFunctions
                 .getHttpsCallable("fetchDetails")
-                .call()
+                .call(data)
                 .continueWith(new Continuation<HttpsCallableResult, String>() {
                     @Override
                     public String then(@NonNull Task<HttpsCallableResult> task) throws Exception {
-                        String result = (String) task.getResult().getData();
+                        String result= task.getResult().getData().toString();
+                        Log.d("hakuna", "then: the value of object is ");
                         return result;
+
                     }
                 });
     }
@@ -103,7 +107,7 @@ public class Upcoming_rides extends AppCompatActivity {
         mUpcomingButtons=(LinearLayout) findViewById(R.id.upcoming_buttons);
         mFunctions = FirebaseFunctions.getInstance();
 
-        fetchDetails()
+        fetchDetails("dummy")
                 .addOnCompleteListener(new OnCompleteListener<String>() {
                     @Override
                     public void onComplete(@NonNull Task<String> task) {
@@ -114,16 +118,16 @@ public class Upcoming_rides extends AppCompatActivity {
                                 FirebaseFunctionsException.Code code = ffe.getCode();
                                 Object details = ffe.getDetails();
                             }
-                            Log.e("hakuna", "fetching upcoming ride details not sucessfull: "+ task.getException() );
+                            Log.e("hakuna", "fetching upcoming ride details not successful: "+ task.getException() );
                         }
-                        Log.d("hakuna", "fetching upcoming ride details sucessful"+task.getResult());
+                        Log.d("hakuna", "fetching upcoming ride details successful"+task.getResult());
                         mRideDetails.setText(task.getResult());
                         try {
                             JSONObject jsonObject = new JSONObject(task.getResult());
-                            String isDriver=jsonObject.get("idDriver").toString();
+                            String isDriver=jsonObject.get("isDriver").toString();
                             if(isDriver.equals("true"))
                             {
-                                mUpcomingButtons.setVisibility(0);
+                                mUpcomingButtons.setVisibility(View.VISIBLE);
                             }
                         }catch (JSONException err){
                             Log.d("hakuna", err.toString());
@@ -135,7 +139,7 @@ public class Upcoming_rides extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d("hakuna","start tip clicked");
-                startTrip()
+                startTrip("dummy")
                         .addOnCompleteListener(new OnCompleteListener<String>() {
                             @Override
                             public void onComplete(@NonNull Task<String> task) {
@@ -157,7 +161,7 @@ public class Upcoming_rides extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d("hakuna","end trip clicked");
-                startTrip()
+                endTrip("dummy")
                         .addOnCompleteListener(new OnCompleteListener<String>() {
                             @Override
                             public void onComplete(@NonNull Task<String> task) {
@@ -171,6 +175,8 @@ public class Upcoming_rides extends AppCompatActivity {
                                     Log.e("hakuna", "end trip not sucessfull :"+task.getException() );
                                 }
                                 Log.d("hakuna", "end trip sucessful "+task.getResult());
+                                finish();
+
                             }
                         });
             }
