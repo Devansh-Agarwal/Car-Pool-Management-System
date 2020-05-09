@@ -505,8 +505,8 @@ public class FetchedRidesActivity extends AppCompatActivity {
             long actualTimeDiff = epochDest - epochSrc;
 
             if((reqSeats <= offSeats) && (Math.abs(actualTimeDiff - timeDiff))<300 &&
-                    PolyUtil.isLocationOnEdge(reqSource, routePoints, true) &&
-                    PolyUtil.isLocationOnEdge(reqDest, routePoints, true)){
+                    PolyUtil.isLocationOnEdge(reqSource, routePoints, true, 50.0) &&
+                    PolyUtil.isLocationOnEdge(reqDest, routePoints, true, 50.0)){
                 return true;
             }
         } catch (ParseException e) {

@@ -200,8 +200,8 @@ public class RideRequestActivity extends FragmentActivity implements OnMapReadyC
                     bundle.putString("fare","250");
                     bundle.putString("finalSourceLat", Double.toString(finalSource.latitude));
                     bundle.putString("finalSourceLng", Double.toString(finalSource.longitude));
-                    bundle.putString("finalDestLat", Double.toString(finalSource.latitude));
-                    bundle.putString("finalDestLng", Double.toString(finalSource.longitude));
+                    bundle.putString("finalDestLat", Double.toString(finalDest.latitude));
+                    bundle.putString("finalDestLng", Double.toString(finalDest.longitude));
                     bundle.putString("startTime", time);
                     bundle.putString("date", date);
                     bundle.putString("seats", seats);

@@ -76,7 +76,7 @@ public class ViewProfile extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(ViewProfile.this, MakeProfile.class);
 //                Intent intent = new Intent(AskPhoneNumber.this, VerifyPhone.class);
-                intent.putExtra("Flag_check", "Update_Profile");
+                intent.putExtra("Flag_check", "Update Profile");
                 startActivity(intent);
             }
         });
