@@ -15,7 +15,7 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
-    private Button mDriver, mRider,mLogout,mView_profile,mHelpcentre;
+    private Button mDriver, mRider,mLogout,mView_profile,mHelpcentre,mSos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
         mLogout=(Button) findViewById(R.id.log_out);
         mView_profile=(Button) findViewById(R.id.view_profile);
         mHelpcentre = (Button) findViewById(R.id.view_help_centre);
+        mSos = (Button)  findViewById(R.id.view_sos);
 
         mRider.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,6 +64,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, HelpActivity.class);
+                startActivity(intent);
+//                finish();
+//                return;
+            }
+        });
+        mSos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SosActivity.class);
                 startActivity(intent);
 //                finish();
 //                return;

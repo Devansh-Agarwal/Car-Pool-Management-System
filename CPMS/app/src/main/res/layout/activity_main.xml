@@ -33,6 +33,12 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="SOS"
+        android:id="@+id/view_sos"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:text="Log Out"
         android:id="@+id/log_out"/>
 </LinearLayout>
