@@ -55,6 +55,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -293,12 +294,15 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
         LinearLayout innerLayout1,innerLayout2;
 
         context = getApplicationContext();
-        String fare = bundle.getString("fare");
-
+//        String fare = bundle.getString("fare");
+        double approxDistance = getApproxDistance(reqSource.latitude, reqSource.longitude, reqDest.latitude, reqDest.longitude, 'k');
+        double fare = 0.25 * 4 * reqSeats * approxDistance;
+        DecimalFormat df = new DecimalFormat("#.##");
+        fare = Double.valueOf(df.format(fare));
         TextView mFare = (TextView)findViewById(R.id.fare);
         TextView eFare = (TextView)findViewById(R.id.fareName);
         eFare.setText("Estimated Fare");
-        mFare.setText(fare);
+        mFare.setText("Rs." + Double.toString( fare));
 
         final String[] name = new String[1];
         final int[] rating = new int[1];
@@ -711,4 +715,27 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
             return "";
         }
     }
+
+    private double getApproxDistance(double lat1, double lon1, double lat2, double lon2, char unit) {
+        double theta = lon1 - lon2;
+        double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+        if (unit == 'K') {
+            dist = dist * 1.609344;
+        } else if (unit == 'N') {
+            dist = dist * 0.8684;
+        }
+        return (dist);
+    }
+
+    private double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
+    private double rad2deg(double rad) {
+        return (rad * 180.0 / Math.PI);
+    }
+
 }
