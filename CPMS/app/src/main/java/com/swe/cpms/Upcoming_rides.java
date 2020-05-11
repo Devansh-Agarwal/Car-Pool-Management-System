@@ -112,6 +112,9 @@ public class Upcoming_rides extends AppCompatActivity {
         mUpcomingButtonsPassenger=(LinearLayout) findViewById(R.id.upcoming_buttons_passenger);
         mFunctions = FirebaseFunctions.getInstance();
 
+        mUpcomingButtons.setVisibility(View.VISIBLE);//only to debug
+        mUpcomingButtonsPassenger.setVisibility(View.VISIBLE);
+
         fetchDetails("dummy")
                 .addOnCompleteListener(new OnCompleteListener<String>() {
                     @Override
@@ -125,62 +128,69 @@ public class Upcoming_rides extends AppCompatActivity {
                             }
                             Log.e("hakuna", "fetching upcoming ride details not successful: "+ task.getException() );
                         }
-                        Log.d("hakuna", "fetching upcoming ride details successful"+task.getResult());
+                        else {
+                            Log.d("hakuna", "fetching upcoming ride details successful" + task.getResult());
 
-                        try {
-                            Log.d("json", "try");
-                            JSONObject jsonObject = new JSONObject(task.getResult());
+                            try {
+                                JSONObject jsonObject = new JSONObject(task.getResult());
 
-                            String display = "";
-                            if(jsonObject!=null){
-                                if(jsonObject.has("rideId")) {
-                                    display += "Ride ID: ";
-                                    display += (String) jsonObject.get("rideId");
-                                    display += "\n";
-                                }
-
-                                Log.d("json", "here");
-
-                                if(jsonObject.has("driver")){
-                                    JSONObject jsonDriver = (JSONObject)jsonObject.get("driver");
-                                    Log.d("json", "7");
-                                    if(jsonDriver.has("name")){
-                                        display+="\nDriver Name: ";
-                                        display+=(String)jsonObject.get("name");
+                                String isValid = jsonObject.get("isValid").toString();
+                                if (isValid.equals("false")) {
+                                    mRideDetails.setText("you have no upcoming rides");
+                                } else {
+                                    mRideDetails.setText(task.getResult());
+                                    String isDriver = jsonObject.get("isDriver").toString();
+                                    if (isDriver.equals("true")) {
+                                        mUpcomingButtons.setVisibility(View.VISIBLE);
+                                    }
+                                    else{
+                                        mUpcomingButtonsPassenger.setVisibility(View.VISIBLE);
                                     }
 
-                                    if(jsonDriver.has("phone")){
-                                        display+="\nContact No. :";
-                                        display+=(String)jsonObject.get("phone");
+                                    String display = "";
+                                    if (jsonObject != null) {
+                                        if (jsonObject.has("rideId")) {
+                                            display += "Ride ID: ";
+                                            display += (String) jsonObject.get("rideId");
+                                            display += "\n";
+                                        }
+
+                                        Log.d("json", "here");
+
+                                        if (jsonObject.has("driver")) {
+                                            JSONObject jsonDriver = (JSONObject) jsonObject.get("driver");
+                                            Log.d("json", "7");
+                                            if (jsonDriver.has("name")) {
+                                                display += "\nDriver Name: ";
+                                                display += (String) jsonObject.get("name");
+                                            }
+
+                                            if (jsonDriver.has("phone")) {
+                                                display += "\nContact No. :";
+                                                display += (String) jsonObject.get("phone");
+                                            }
+                                        }
+
+
+                                        if (jsonObject.has("passengers")) {
+                                            JSONArray passengers = (JSONArray) jsonObject.get("passengers");
+                                            Log.d("json", "passengers is not null");
+                                            int sizeArr = ((List) passengers).size();
+
+                                            for (int i = 0; i < sizeArr; i++) {
+                                                JSONObject pass = (JSONObject) passengers.get(i);
+                                                if (pass.has("name"))
+                                                    display += "\nPassenger" + Integer.toString(i) + " Name: " + (String) jsonObject.get("name");
+                                                if (pass.has("phone"))
+                                                    display += "\nPassenger" + Integer.toString(i) + " Contact No.: " + (String) jsonObject.get("phone");
+                                            }
+                                        }
                                     }
+
                                 }
-
-
-                                if(jsonObject.has("passengers")){
-                                    JSONArray passengers = (JSONArray) jsonObject.get("passengers");
-                                    Log.d("json","passengers is not null");
-                                    int sizeArr = ((List)passengers).size();
-
-                                    for(int i=0;i<sizeArr;i++){
-                                        JSONObject pass = (JSONObject) passengers.get(i);
-                                        if(pass.has("name"))display+="\nPassenger"+Integer.toString(i)+" Name: "+(String)jsonObject.get("name");
-                                        if(pass.has("phone"))display+="\nPassenger"+Integer.toString(i)+" Contact No.: "+(String)jsonObject.get("phone");
-                                    }
-                                }
+                            } catch (JSONException err) {
+                                Log.d("hakuna", err.toString());
                             }
-
-                            mRideDetails.setText(display);
-
-                            String isDriver=jsonObject.get("isDriver").toString();
-                            if(isDriver.equals("true"))
-                            {
-                                mUpcomingButtons.setVisibility(View.VISIBLE);
-                            }
-                            else{
-                                mUpcomingButtonsPassenger.setVisibility(View.VISIBLE);
-                            }
-                        }catch (JSONException err){
-                            Log.d("hakuna", err.toString());
                         }
                     }
                 });
@@ -235,38 +245,39 @@ public class Upcoming_rides extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String details = (String)mRideDetails.getText();
-                try {
-                    JSONObject jsonObject = new JSONObject(details);
-                    String rideID=jsonObject.get("rideId").toString();
-                    Intent serviceIntent = new Intent(DriverTrackingActivity.class.getName());
-                    serviceIntent.putExtra("rideID", rideID);
-    //                Context context;
-    //                context.startService(serviceIntent);
+//                try {
+//                    JSONObject jsonObject = new JSONObject(details);
+//                    String rideID=jsonObject.get("rideId").toString();
+                    Intent serviceIntent = new Intent(Upcoming_rides.this, DriverTrackingActivity.class);
+//                    serviceIntent.putExtra("rideID", "22fbb568-5ef7-4f83-b41e-0162cc385a7b");
+                    //                Context context;
+                    //                context.startService(serviceIntent);
+                    Log.d("track", "starting service");
                     startService(serviceIntent);
 
-                }catch (JSONException err){
-                    Log.d("hakuna", err.toString());
-                }
-                Log.d("details", details);
+//                }catch (JSONException err){
+//                    Log.d("hakuna", err.toString());
+//                }
+//                Log.d("details", details);
 //
             }
         });
         mTrackingPassenger.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String details = (String)mRideDetails.getText();
-                try {
-                    JSONObject jsonObject = new JSONObject(details);
-                    String rideID=jsonObject.get("rideId").toString();
+//                String details = (String)mRideDetails.getText();
+//                try {
+//                    JSONObject jsonObject = new JSONObject(details);
+//                    String rideID=jsonObject.get("rideId").toString();
                     Intent intent = new Intent(Upcoming_rides.this, PassengerTrackingActivity.class);
                     Bundle bundle = new Bundle();
-                    bundle.putString("rideID",rideID);
+                    bundle.putString("rideID","22fbb568-5ef7-4f83-b41e-0162cc385a7b");
                     intent.putExtras(bundle);
                     Log.d("bla", "inRideRequest");
                     startActivity(intent);
-                }catch (JSONException err){
-                    Log.d("hakuna", err.toString());
-                }
+//                }catch (JSONException err){
+//                    Log.d("hakuna", err.toString());
+//                }
             }
         });
 

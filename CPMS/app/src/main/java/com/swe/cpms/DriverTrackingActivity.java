@@ -36,9 +36,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-class DriverTrackingActivity extends Service {
+
+
+public class DriverTrackingActivity extends Service {
     private static final String TAG = DriverTrackingActivity.class.getSimpleName();
-    String rideID;
+    String rideID = "22fbb568-5ef7-4f83-b41e-0162cc385a7b";
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -46,15 +49,17 @@ class DriverTrackingActivity extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
-        rideID = intent.getStringExtra("rideID");
+//        rideID = intent.getStringExtra("rideID");
         return START_STICKY;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        buildNotification();
-        loginToFirebase();
+        Log.d("track", "activity opened");
+//        buildNotification();
+        requestLocationUpdates();
+//        loginToFirebase();
     }
 
 //Create the persistent notification//
@@ -91,79 +96,66 @@ class DriverTrackingActivity extends Service {
         }
     };
 
-    private void loginToFirebase() {
+//    private void loginToFirebase() {
+//
+//
+//    }
 
-
-    }
-
-//Initiate the request to track the device's location//
 
     private void requestLocationUpdates() {
         LocationRequest request = new LocationRequest();
-
-//Specify how often your app should request the device’s location//
-
         request.setInterval(10000);
-
-//Get the most accurate location data available//
+        Log.d("track", "requestLocationUpdates");
 
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(this);
-//        final String path = getString(R.string.firebfase_path);
-//        int permission = ContextCompat.checkSelfPermission(this,
-//                Manifest.permission.ACCESS_FINE_LOCATION);
-
-//If the app currently has access to the location permission...//
-
-//        if (permission == PackageManager.PERMISSION_GRANTED) {
-
-//...then request location updates//
 
             client.requestLocationUpdates(request, new LocationCallback() {
-                @Override
-                public void onLocationResult(LocationResult locationResult) {
-                    final Location location = locationResult.getLastLocation();
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                final Location location = locationResult.getLastLocation();
 //Get a reference to the database, so your app can perform read and write operations//
 
-                    final CollectionReference collRef= FirebaseFirestore.getInstance().collection("TrackLocation");
-                    DocumentReference docIdRef = collRef.document(rideID);
-                    docIdRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                requestLocationUpdates();
-                                DocumentSnapshot document = task.getResult();
-                                if (!document.exists()) {
-                                    Map<String, Object> docData = new HashMap<>();
-                                    docData.put("isDriverSharing", true);
-                                    docData.put("latitude", location.getLatitude());
-                                    docData.put("longitude", location.getLongitude());
+                final CollectionReference collRef= FirebaseFirestore.getInstance().collection("TrackLocation");
+                DocumentReference docIdRef = collRef.document(rideID);
+                docIdRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+//                            requestLocationUpdates();
+                            DocumentSnapshot document = task.getResult();
+                            if (!document.exists()) {
+                                Log.d("track", "creating for the first time");
+                                Map<String, Object> docData = new HashMap<>();
+                                docData.put("isDriverSharing", true);
+                                docData.put("latitude", location.getLatitude());
+                                docData.put("longitude", location.getLongitude());
 //                                    Log.d("update", user_auth.getUid());
-                                    collRef.document(rideID).set(docData)
-                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void aVoid) {
-                                                    Log.d("update", "DocumentSnapshot successfully written!");
-                                                }
-                                            })
-                                            .addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    Log.w("update", "Error writing document", e);
-                                                }
-                                            });
-                                    ;
-                                } else {
-                                    collRef.document(rideID).update("latitude", location.getLatitude());
-                                    collRef.document(rideID).update("longitude", location.getLongitude());
-                                }
+                                collRef.document(rideID).set(docData)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                Log.d("update", "DocumentSnapshot successfully written!");
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Log.w("update", "Error writing document", e);
+                                            }
+                                        });
+                                ;
                             } else {
-                                Log.d("update", "Failed with: ", task.getException());
+                                Log.d("track", "updating");
+                                collRef.document(rideID).update("latitude", location.getLatitude());
+                                collRef.document(rideID).update("longitude", location.getLongitude());
                             }
+                        } else {
+                            Log.d("update", "Failed with: ", task.getException());
                         }
-                    });
-                }
-            }, null);
-//        }
+                    }
+                });
+            }
+        }, null);
     }
 }

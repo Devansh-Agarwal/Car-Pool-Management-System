@@ -35,7 +35,29 @@
                     android:text="Select your location where you want to book your cab from and put the desired destination with appropriate time detail. Our application will provide you the list of possible drivers. Choose as per your convenience."
                     android:textSize="18sp"
                     android:textStyle="bold" />
-        </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="6dip"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="->SOS Feature"
+                    android:textSize="25sp"
+                    android:textStyle="bold" />
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Your safety is our prime concern. In case you sense any danger in any circumstance, our application allows you to send your location with just one click to your contacts."
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
                 <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="fill_parent"
