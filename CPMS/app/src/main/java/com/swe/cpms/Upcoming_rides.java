@@ -249,7 +249,7 @@ public class Upcoming_rides extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(str);
                     String rideID=jsonObject.get("rideId").toString();
                     Intent serviceIntent = new Intent(Upcoming_rides.this, DriverTrackingActivity.class);
-                    serviceIntent.putExtra("rideID", "22fbb568-5ef7-4f83-b41e-0162cc385a7b");
+                    serviceIntent.putExtra("rideID", rideID);
                     //                Context context;
                     //                context.startService(serviceIntent);
                     Log.d("track", "starting service");

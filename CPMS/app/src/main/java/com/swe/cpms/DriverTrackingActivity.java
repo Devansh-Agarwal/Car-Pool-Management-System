@@ -14,6 +14,7 @@ import android.location.Location;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -121,43 +122,26 @@ public class DriverTrackingActivity extends Service {
 
                 final CollectionReference collRef= FirebaseFirestore.getInstance().collection("TrackLocation");
                 DocumentReference docIdRef = collRef.document(rideID);
-                docIdRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                Log.d("track", "creating for the first time");
+                Map<String, Object> docData = new HashMap<>();
+                docData.put("isDriverSharing", true);
+                docData.put("latitude", location.getLatitude());
+                docData.put("longitude", location.getLongitude());
+                docIdRef.set(docData)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-//                            requestLocationUpdates();
-                            DocumentSnapshot document = task.getResult();
-                            if (!document.exists()) {
-                                Log.d("track", "creating for the first time");
-                                Map<String, Object> docData = new HashMap<>();
-                                docData.put("isDriverSharing", true);
-                                docData.put("latitude", location.getLatitude());
-                                docData.put("longitude", location.getLongitude());
-//                                    Log.d("update", user_auth.getUid());
-                                collRef.document(rideID).set(docData)
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                Log.d("update", "DocumentSnapshot successfully written!");
-                                            }
-                                        })
-                                        .addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Log.w("update", "Error writing document", e);
-                                            }
-                                        });
-                                ;
-                            } else {
-                                Log.d("track", "updating");
-                                collRef.document(rideID).update("latitude", location.getLatitude());
-                                collRef.document(rideID).update("longitude", location.getLongitude());
-                            }
-                        } else {
-                            Log.d("update", "Failed with: ", task.getException());
-                        }
+                    public void onSuccess(Void aVoid) {
+                        Log.d("hakuna", "DocumentSnapshot successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("hakuna", "Error writing document", e);
                     }
                 });
+
+
             }
         }, null);
     }

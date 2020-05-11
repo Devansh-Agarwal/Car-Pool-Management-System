@@ -18,6 +18,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -66,42 +67,37 @@ public class PassengerTrackingActivity extends FragmentActivity implements OnMap
     private void updateLoc() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference colRef = db.collection("TrackLocation");
-//        Log.d("track", "function");
+        DocumentReference docRef = colRef.document(rideID);
+        //        Log.d("track", "function");
 
-        LatLng latLng = new LatLng(17.0646517, 79.2639274);
+        LatLng latLng = new LatLng(20.0646517, 80.2639274);
 
         mMap.addMarker(new MarkerOptions().position(latLng));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
 
-        colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
-                    QuerySnapshot coll = task.getResult();
-                    List<DocumentSnapshot> rides = coll.getDocuments();
-
-                    for (int i = 0; i < rides.size(); i++) {
-                        if(rides.get(i).getId()==rideID ){
-                            Map<String, Object> data = rides.get(i).getData();
-                            boolean track = (boolean) data.get("isDriverSharing");
-                            if(track){
-                                Log.d("track", "readingValues");
-                                Double lat = (Double) data.get("latitude");
-                                Double lng = (Double) data.get("longitude");
-                                Log.d("track", lat.toString()+lng.toString());
-                                LatLng latLng = new LatLng(lat, lng);
+                    DocumentSnapshot data = task.getResult();
+                    boolean track = (boolean) data.get("isDriverSharing");
+                    if(track){
+                        Log.d("track", "readingValues");
+                        Double lat = (Double) data.get("latitude");
+                        Double lng = (Double) data.get("longitude");
+                        Log.d("track", lat.toString()+lng.toString());
+                        LatLng latLng = new LatLng(lat, lng);
 //                                LatLng latLng = new LatLng(17.0646517, 79.2639274);
 
-                                mMap.addMarker(new MarkerOptions().position(latLng));
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+                        mMap.addMarker(new MarkerOptions().position(latLng));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
 
-                            }
                         }
                     }
                 }
-            }
+
         });
     }
 
