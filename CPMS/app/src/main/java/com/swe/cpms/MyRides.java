@@ -307,7 +307,7 @@ public class MyRides extends AppCompatActivity {
                         String startTime = data.get("StartTime").toString();
 //                        String endTime = data.get("EndTime").toString();
                         String date = data.get("date").toString();
-                        int seats = Integer.parseInt(data.get("totalNumberOfSeats").toString().trim());
+                        int seats = Integer.parseInt(data.get("numberOfPeople").toString().trim());
                         try {
                             displayMyRides(i, source, dest, startTime, date, seats);
                         } catch (IOException e) {
