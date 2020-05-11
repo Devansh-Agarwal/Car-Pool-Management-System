@@ -112,8 +112,8 @@ public class Upcoming_rides extends AppCompatActivity {
         mUpcomingButtonsPassenger=(LinearLayout) findViewById(R.id.upcoming_buttons_passenger);
         mFunctions = FirebaseFunctions.getInstance();
 
-        mUpcomingButtons.setVisibility(View.VISIBLE);//only to debug
-        mUpcomingButtonsPassenger.setVisibility(View.VISIBLE);
+//        mUpcomingButtons.setVisibility(View.VISIBLE);//only to debug
+//        mUpcomingButtonsPassenger.setVisibility(View.VISIBLE);
 
         fetchDetails("dummy")
                 .addOnCompleteListener(new OnCompleteListener<String>() {
@@ -170,8 +170,6 @@ public class Upcoming_rides extends AppCompatActivity {
                                                 display += (String) jsonDriver.get("phone");
                                             }
                                         }
-
-
                                         if (jsonObject.has("passengers")) {
                                             JSONArray passengers = (JSONArray) jsonObject.get("passengers");
                                             Log.d("json", "passengers is not null");
@@ -247,42 +245,42 @@ public class Upcoming_rides extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String details = (String)mRideDetails.getText();
-//                try {
-//                    JSONObject jsonObject = new JSONObject(details);
-//                    String rideID=jsonObject.get("rideId").toString();
+                try {
+                    JSONObject jsonObject = new JSONObject(details);
+                    String rideID=jsonObject.get("rideId").toString();
                     Intent serviceIntent = new Intent(Upcoming_rides.this, DriverTrackingActivity.class);
-//                    serviceIntent.putExtra("rideID", "22fbb568-5ef7-4f83-b41e-0162cc385a7b");
+                    serviceIntent.putExtra("rideID", "22fbb568-5ef7-4f83-b41e-0162cc385a7b");
                     //                Context context;
                     //                context.startService(serviceIntent);
                     Log.d("track", "starting service");
-                    startService(serviceIntent);
+                    Context context = getApplicationContext();
+                    context.startService(serviceIntent);
 
-//                }catch (JSONException err){
-//                    Log.d("hakuna", err.toString());
-//                }
-//                Log.d("details", details);
+                }catch (JSONException err){
+                    Log.d("hakuna", err.toString());
+                }
+                Log.d("details", details);
 //
             }
         });
         mTrackingPassenger.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                String details = (String)mRideDetails.getText();
-//                try {
-//                    JSONObject jsonObject = new JSONObject(details);
-//                    String rideID=jsonObject.get("rideId").toString();
+                String details = (String)mRideDetails.getText();
+                try {
+                    JSONObject jsonObject = new JSONObject(details);
+                    String rideID=jsonObject.get("rideId").toString();
                     Intent intent = new Intent(Upcoming_rides.this, PassengerTrackingActivity.class);
                     Bundle bundle = new Bundle();
-                    bundle.putString("rideID","22fbb568-5ef7-4f83-b41e-0162cc385a7b");
+//                    bundle.putString("rideID","22fbb568-5ef7-4f83-b41e-0162cc385a7b");
+                    bundle.putString("rideID", rideID);
                     intent.putExtras(bundle);
-                    Log.d("bla", "inRideRequest");
+                    Log.d("bla", "passenger");
                     startActivity(intent);
-//                }catch (JSONException err){
-//                    Log.d("hakuna", err.toString());
-//                }
+                }catch (JSONException err){
+                    Log.d("hakuna", err.toString());
+                }
             }
         });
-
-
     }
 }

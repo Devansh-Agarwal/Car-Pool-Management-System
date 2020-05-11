@@ -1,6 +1,8 @@
 package com.swe.cpms;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -9,10 +11,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -36,12 +40,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-
-
 public class DriverTrackingActivity extends Service {
     private static final String TAG = DriverTrackingActivity.class.getSimpleName();
-    String rideID = "22fbb568-5ef7-4f83-b41e-0162cc385a7b";
-
+    private static final String NOTIFICATION_CHANNEL_ID_SERVICE = "com.mypackage.service";
+    private static final String NOTIFICATION_CHANNEL_ID_INFO = "com.mypackage.download_info";
+    //    String rideID = "22fbb568-5ef7-4f83-b41e-0162cc385a7b";
+    String rideID;
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -49,58 +53,57 @@ public class DriverTrackingActivity extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
-//        rideID = intent.getStringExtra("rideID");
+        rideID = intent.getStringExtra("rideID");
         return START_STICKY;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d("track", "activity opened");
-//        buildNotification();
+        initChannel();
+        buildNotification();
         requestLocationUpdates();
 //        loginToFirebase();
     }
 
 //Create the persistent notification//
 
+    public void initChannel(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            nm.createNotificationChannel(new NotificationChannel(NOTIFICATION_CHANNEL_ID_SERVICE, "App Service", NotificationManager.IMPORTANCE_DEFAULT));
+            nm.createNotificationChannel(new NotificationChannel(NOTIFICATION_CHANNEL_ID_INFO, "Download Info", NotificationManager.IMPORTANCE_DEFAULT));
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void buildNotification() {
         String stop = "stop";
         registerReceiver(stopReceiver, new IntentFilter(stop));
         PendingIntent broadcastIntent = PendingIntent.getBroadcast(
                 this, 0, new Intent(stop), PendingIntent.FLAG_UPDATE_CURRENT);
         // Create the persistent notification
-        Notification.Builder builder = new Notification.Builder(this)
+        Notification.Builder builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID_INFO)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText("Live Tracking is on")
-
-//Make this notification ongoing so it can’t be dismissed by the user//
-
                 .setOngoing(true)
                 .setContentIntent(broadcastIntent);
 //                .setSmallIcon(R.drawable.tracking_enabled);
+//        Notification notification = builder.build();
         startForeground(1, builder.build());
     }
 
     protected BroadcastReceiver stopReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
-//Unregister the BroadcastReceiver when the notification is tapped//
-
             unregisterReceiver(stopReceiver);
 
-//Stop the Service//
-
             stopSelf();
+            stopForeground(true);
         }
     };
-
-//    private void loginToFirebase() {
-//
-//
-//    }
-
 
     private void requestLocationUpdates() {
         LocationRequest request = new LocationRequest();
