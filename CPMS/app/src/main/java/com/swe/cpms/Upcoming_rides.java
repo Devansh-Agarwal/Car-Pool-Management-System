@@ -162,12 +162,12 @@ public class Upcoming_rides extends AppCompatActivity {
                                             Log.d("json", "7");
                                             if (jsonDriver.has("name")) {
                                                 display += "\nDriver Name: ";
-                                                display += (String) jsonObject.get("name");
+                                                display += (String) jsonDriver.get("name");
                                             }
 
                                             if (jsonDriver.has("phone")) {
                                                 display += "\nContact No. :";
-                                                display += (String) jsonObject.get("phone");
+                                                display += (String) jsonDriver.get("phone");
                                             }
                                         }
 
@@ -175,16 +175,18 @@ public class Upcoming_rides extends AppCompatActivity {
                                         if (jsonObject.has("passengers")) {
                                             JSONArray passengers = (JSONArray) jsonObject.get("passengers");
                                             Log.d("json", "passengers is not null");
-                                            int sizeArr = ((List) passengers).size();
+                                            int sizeArr = passengers.length();
 
                                             for (int i = 0; i < sizeArr; i++) {
                                                 JSONObject pass = (JSONObject) passengers.get(i);
+                                                display += "\n\nPassenger " + Integer.toString(i) + ":\n";
                                                 if (pass.has("name"))
-                                                    display += "\nPassenger" + Integer.toString(i) + " Name: " + (String) jsonObject.get("name");
+                                                    display += "Name: " + (String) pass.get("name") +"\n";
                                                 if (pass.has("phone"))
-                                                    display += "\nPassenger" + Integer.toString(i) + " Contact No.: " + (String) jsonObject.get("phone");
+                                                    display += "Contact No.: " + (String) pass.get("phone");
                                             }
                                         }
+                                        mRideDetails.setText(display);
                                     }
 
                                 }
