@@ -106,7 +106,7 @@ public class Upcoming_rides extends AppCompatActivity {
         mRideDetails=(TextView) findViewById(R.id.upcoming_rideDetails);
         mStartTrip=(Button) findViewById(R.id.upcoming_start_trip);
         mEndTrip=(Button) findViewById(R.id.upcoming_end_trip);
-        mTracking=(Button) findViewById(R.id.upcoming_live_tracking);
+        //mTracking=(Button) findViewById(R.id.upcoming_live_tracking);
         mTrackingPassenger=(Button) findViewById(R.id.upcoming_liveTracking_passenger);
         mUpcomingButtons=(LinearLayout) findViewById(R.id.upcoming_buttons);
         mUpcomingButtonsPassenger=(LinearLayout) findViewById(R.id.upcoming_buttons_passenger);
@@ -215,6 +215,21 @@ public class Upcoming_rides extends AppCompatActivity {
                                 Log.d("hakuna", "start trip sucessful "+task.getResult());
                             }
                         });
+                try {
+                    JSONObject jsonObject = new JSONObject(str);
+                    String rideID=jsonObject.get("rideId").toString();
+                    Intent serviceIntent = new Intent(Upcoming_rides.this, DriverTrackingActivity.class);
+                    serviceIntent.putExtra("rideID", rideID);
+                    //                Context context;
+                    //                context.startService(serviceIntent);
+                    Log.d("track", "starting service");
+                    Context context = getApplicationContext();
+                    context.startService(serviceIntent);
+
+                }catch (JSONException err){
+                    Log.d("hakuna", err.toString());
+                }
+
             }
         });
         mEndTrip.setOnClickListener(new View.OnClickListener() {
@@ -236,29 +251,30 @@ public class Upcoming_rides extends AppCompatActivity {
                                 }
                                 Log.d("hakuna", "end trip sucessful "+task.getResult());
                                 finish();
-
+                                stopService(new Intent(Upcoming_rides.this, DriverTrackingActivity.class));
                             }
                         });
+
             }
         });
         mTracking.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 //                String details = (String)mRideDetails.getText();
-                try {
-                    JSONObject jsonObject = new JSONObject(str);
-                    String rideID=jsonObject.get("rideId").toString();
-                    Intent serviceIntent = new Intent(Upcoming_rides.this, DriverTrackingActivity.class);
-                    serviceIntent.putExtra("rideID", rideID);
-                    //                Context context;
-                    //                context.startService(serviceIntent);
-                    Log.d("track", "starting service");
-                    Context context = getApplicationContext();
-                    context.startService(serviceIntent);
-
-                }catch (JSONException err){
-                    Log.d("hakuna", err.toString());
-                }
+//                try {
+//                    JSONObject jsonObject = new JSONObject(str);
+//                    String rideID=jsonObject.get("rideId").toString();
+//                    Intent serviceIntent = new Intent(Upcoming_rides.this, DriverTrackingActivity.class);
+//                    serviceIntent.putExtra("rideID", rideID);
+//                    //                Context context;
+//                    //                context.startService(serviceIntent);
+//                    Log.d("track", "starting service");
+//                    Context context = getApplicationContext();
+//                    context.startService(serviceIntent);
+//
+//                }catch (JSONException err){
+//                    Log.d("hakuna", err.toString());
+//                }
 //                Log.d("details", details);
 //
             }

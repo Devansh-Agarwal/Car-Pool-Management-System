@@ -43,8 +43,8 @@ import java.util.Map;
 
 public class DriverTrackingActivity extends Service {
     private static final String TAG = DriverTrackingActivity.class.getSimpleName();
-    private static final String NOTIFICATION_CHANNEL_ID_SERVICE = "com.mypackage.service";
-    private static final String NOTIFICATION_CHANNEL_ID_INFO = "com.mypackage.download_info";
+    private static final String NOTIFICATION_CHANNEL_ID_SERVICE = "com.swe.cpms.service";
+    private static final String NOTIFICATION_CHANNEL_ID_INFO = "com.swe.cpms.download_info";
     //    String rideID = "22fbb568-5ef7-4f83-b41e-0162cc385a7b";
     String rideID;
     @Override
@@ -63,10 +63,19 @@ public class DriverTrackingActivity extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d("track", "activity opened");
-        initChannel();
-        buildNotification();
+       // initChannel();
+        //buildNotification();
         requestLocationUpdates();
 //        loginToFirebase();
+    }
+
+
+    @Override
+    public boolean stopService(Intent name) {
+        // TODO Auto-generated method stub
+
+        return super.stopService(name);
+
     }
 
 //Create the persistent notification//

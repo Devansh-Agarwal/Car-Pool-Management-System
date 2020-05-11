@@ -4,6 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -110,6 +114,30 @@ public class PassengerTrackingActivity extends FragmentActivity implements OnMap
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
+    }
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            // Extract data included in the Intent
+            String message = intent.getStringExtra("message");
+            finish();
+           // String temp="Upcoming Rides "+"("+ getValue("upcoming_rides",homeActivity)+")";
+            //mView_upcoming.setText(temp);
+        }
+    };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.registerReceiver(mMessageReceiver, new IntentFilter("notification"));
+    }
+
+    //Must unregister onPause()
+    @Override
+    protected void onPause() {
+        super.onPause();
+        this.unregisterReceiver(mMessageReceiver);
     }
 }
 

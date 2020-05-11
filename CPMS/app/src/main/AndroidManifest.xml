@@ -60,11 +60,14 @@
         <activity android:name=".HelpActivity" />
 	    <activity android:name=".SosActivity" />
 
-        <service android:name=".DriverTrackingActivity">
+        <service android:name=".MyFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
-        </service> <!-- <meta-data -->
+        </service>
+        <service android:name=".DriverTrackingActivity"/>
+
+        <!-- <meta-data -->
         <!-- android:name="com.google.android.maps.v2.API_KEY" -->
         <!-- android:value="@string/google_maps_key" /> -->
         <!-- <meta-data android:name="com.google.android.gms.version" -->
