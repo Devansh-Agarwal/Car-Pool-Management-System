@@ -35,9 +35,9 @@ import org.w3c.dom.Text;
 
 import java.util.Map;
 
-
 public class Upcoming_rides extends AppCompatActivity {
 
+    String str;
     TextView mRideDetails;
     Button mStartTrip,mEndTrip,mTracking,mTrackingPassenger;
     LinearLayout mUpcomingButtons,mUpcomingButtonsPassenger;
@@ -126,14 +126,14 @@ public class Upcoming_rides extends AppCompatActivity {
                                 FirebaseFunctionsException.Code code = ffe.getCode();
                                 Object details = ffe.getDetails();
                             }
-                            Log.e("hakuna", "fetching upcoming ride details not successful: "+ task.getException() );
+                            Log.e("hakuna", "fetching upcoming ride details not at all successful: "+ task.getException() );
                         }
                         else {
                             Log.d("hakuna", "fetching upcoming ride details successful" + task.getResult());
 
                             try {
                                 JSONObject jsonObject = new JSONObject(task.getResult());
-
+                                str = task.getResult();
                                 String isValid = jsonObject.get("isValid").toString();
                                 if (isValid.equals("false")) {
                                     mRideDetails.setText("you have no upcoming rides");
@@ -244,9 +244,9 @@ public class Upcoming_rides extends AppCompatActivity {
         mTracking.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String details = (String)mRideDetails.getText();
+//                String details = (String)mRideDetails.getText();
                 try {
-                    JSONObject jsonObject = new JSONObject(details);
+                    JSONObject jsonObject = new JSONObject(str);
                     String rideID=jsonObject.get("rideId").toString();
                     Intent serviceIntent = new Intent(Upcoming_rides.this, DriverTrackingActivity.class);
                     serviceIntent.putExtra("rideID", "22fbb568-5ef7-4f83-b41e-0162cc385a7b");
@@ -259,16 +259,16 @@ public class Upcoming_rides extends AppCompatActivity {
                 }catch (JSONException err){
                     Log.d("hakuna", err.toString());
                 }
-                Log.d("details", details);
+//                Log.d("details", details);
 //
             }
         });
         mTrackingPassenger.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String details = (String)mRideDetails.getText();
+//                String details = (String)mRideDetails.getText();
                 try {
-                    JSONObject jsonObject = new JSONObject(details);
+                    JSONObject jsonObject = new JSONObject(str);
                     String rideID=jsonObject.get("rideId").toString();
                     Intent intent = new Intent(Upcoming_rides.this, PassengerTrackingActivity.class);
                     Bundle bundle = new Bundle();

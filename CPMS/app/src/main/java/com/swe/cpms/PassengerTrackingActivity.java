@@ -57,7 +57,7 @@ public class PassengerTrackingActivity extends FragmentActivity implements OnMap
     private Runnable callUpdateLoc = new Runnable() {
         @Override
         public void run() {
-            Log.d("track", "run");
+//            Log.d("track", "run");
             updateLoc();
             mHandler.postDelayed(this, 10000);
         }
@@ -66,7 +66,7 @@ public class PassengerTrackingActivity extends FragmentActivity implements OnMap
     private void updateLoc() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference colRef = db.collection("TrackLocation");
-        Log.d("track", "function");
+//        Log.d("track", "function");
 
         LatLng latLng = new LatLng(17.0646517, 79.2639274);
 
