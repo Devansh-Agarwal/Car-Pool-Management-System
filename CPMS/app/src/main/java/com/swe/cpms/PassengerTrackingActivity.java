@@ -117,11 +117,13 @@ public class PassengerTrackingActivity extends FragmentActivity implements OnMap
     }
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent intent) {
+        public void onReceive(Context context, Intent newintent) {
 
             // Extract data included in the Intent
-            String message = intent.getStringExtra("message");
-            finish();
+
+            Intent intent = new Intent(PassengerTrackingActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
            // String temp="Upcoming Rides "+"("+ getValue("upcoming_rides",homeActivity)+")";
             //mView_upcoming.setText(temp);
         }

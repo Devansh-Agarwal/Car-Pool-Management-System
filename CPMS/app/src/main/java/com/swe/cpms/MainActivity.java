@@ -178,29 +178,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            finish();
-//            // Extract data included in the Intent
-//            String message = intent.getStringExtra("message");
-//            String temp="Upcoming Rides "+"("+ getValue("upcoming_rides",homeActivity)+")";
-//            mView_upcoming.setText(temp);
-        }
-    };
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        this.registerReceiver(mMessageReceiver, new IntentFilter("notification"));
-    }
-
-    //Must unregister onPause()
-    @Override
-    protected void onPause() {
-        super.onPause();
-        this.unregisterReceiver(mMessageReceiver);
-    }
 
 
     //This is the handler that will manager to process the broadcast intent
