@@ -33,7 +33,6 @@
             android:id="@+id/upcoming_start_trip"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
             android:text="Start Trip"
             android:layout_margin="10dp"
             />
@@ -45,7 +44,6 @@
             android:id="@+id/upcoming_end_trip"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
             android:text="End Trip"
             android:layout_margin="10dp"
             />
@@ -54,7 +52,6 @@
             android:id="@+id/upcoming_live_tracking"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
             android:text="Share Live Location"
             android:layout_margin="10dp"
             />
@@ -77,7 +74,6 @@
             android:id="@+id/upcoming_liveTracking_passenger"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
             android:text="Start Tracking"
             android:layout_margin="10dp"
             />
