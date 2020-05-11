@@ -257,28 +257,28 @@ public class Upcoming_rides extends AppCompatActivity {
 
             }
         });
-        mTracking.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                String details = (String)mRideDetails.getText();
-//                try {
-//                    JSONObject jsonObject = new JSONObject(str);
-//                    String rideID=jsonObject.get("rideId").toString();
-//                    Intent serviceIntent = new Intent(Upcoming_rides.this, DriverTrackingActivity.class);
-//                    serviceIntent.putExtra("rideID", rideID);
-//                    //                Context context;
-//                    //                context.startService(serviceIntent);
-//                    Log.d("track", "starting service");
-//                    Context context = getApplicationContext();
-//                    context.startService(serviceIntent);
-//
-//                }catch (JSONException err){
-//                    Log.d("hakuna", err.toString());
-//                }
-//                Log.d("details", details);
-//
-            }
-        });
+//        mTracking.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+////                String details = (String)mRideDetails.getText();
+////                try {
+////                    JSONObject jsonObject = new JSONObject(str);
+////                    String rideID=jsonObject.get("rideId").toString();
+////                    Intent serviceIntent = new Intent(Upcoming_rides.this, DriverTrackingActivity.class);
+////                    serviceIntent.putExtra("rideID", rideID);
+////                    //                Context context;
+////                    //                context.startService(serviceIntent);
+////                    Log.d("track", "starting service");
+////                    Context context = getApplicationContext();
+////                    context.startService(serviceIntent);
+////
+////                }catch (JSONException err){
+////                    Log.d("hakuna", err.toString());
+////                }
+////                Log.d("details", details);
+////
+//            }
+//        });
         mTrackingPassenger.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
