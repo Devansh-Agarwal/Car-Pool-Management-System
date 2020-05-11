@@ -28,7 +28,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MakeProfile extends AppCompatActivity {
+public class    MakeProfile extends AppCompatActivity {
     EditText name,email,e_age,e_dl_no,e_v_no ;
     Button btn,btn_cancel;
     RadioButton genderradioButton;

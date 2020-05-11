@@ -1,6 +1,8 @@
 package com.swe.cpms;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -9,10 +11,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -36,8 +41,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-class DriverTrackingActivity extends Service {
+public class DriverTrackingActivity extends Service {
     private static final String TAG = DriverTrackingActivity.class.getSimpleName();
+    private static final String NOTIFICATION_CHANNEL_ID_SERVICE = "com.swe.cpms.service";
+    private static final String NOTIFICATION_CHANNEL_ID_INFO = "com.swe.cpms.download_info";
+    //    String rideID = "22fbb568-5ef7-4f83-b41e-0162cc385a7b";
     String rideID;
     @Override
     public IBinder onBind(Intent intent) {
@@ -50,120 +58,100 @@ class DriverTrackingActivity extends Service {
         return START_STICKY;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onCreate() {
         super.onCreate();
-        buildNotification();
-        loginToFirebase();
+        Log.d("track", "activity opened");
+       // initChannel();
+        //buildNotification();
+        requestLocationUpdates();
+//        loginToFirebase();
+    }
+
+
+    @Override
+    public boolean stopService(Intent name) {
+        // TODO Auto-generated method stub
+
+        return super.stopService(name);
+
     }
 
 //Create the persistent notification//
 
+    public void initChannel(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            nm.createNotificationChannel(new NotificationChannel(NOTIFICATION_CHANNEL_ID_SERVICE, "App Service", NotificationManager.IMPORTANCE_DEFAULT));
+            nm.createNotificationChannel(new NotificationChannel(NOTIFICATION_CHANNEL_ID_INFO, "Download Info", NotificationManager.IMPORTANCE_DEFAULT));
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void buildNotification() {
         String stop = "stop";
         registerReceiver(stopReceiver, new IntentFilter(stop));
         PendingIntent broadcastIntent = PendingIntent.getBroadcast(
                 this, 0, new Intent(stop), PendingIntent.FLAG_UPDATE_CURRENT);
         // Create the persistent notification
-        Notification.Builder builder = new Notification.Builder(this)
+        Notification.Builder builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID_INFO)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText("Live Tracking is on")
-
-//Make this notification ongoing so it can’t be dismissed by the user//
-
                 .setOngoing(true)
                 .setContentIntent(broadcastIntent);
 //                .setSmallIcon(R.drawable.tracking_enabled);
+//        Notification notification = builder.build();
         startForeground(1, builder.build());
     }
 
     protected BroadcastReceiver stopReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
-//Unregister the BroadcastReceiver when the notification is tapped//
-
             unregisterReceiver(stopReceiver);
 
-//Stop the Service//
-
             stopSelf();
+            stopForeground(true);
         }
     };
 
-    private void loginToFirebase() {
-
-
-    }
-
-//Initiate the request to track the device's location//
-
     private void requestLocationUpdates() {
         LocationRequest request = new LocationRequest();
-
-//Specify how often your app should request the device’s location//
-
         request.setInterval(10000);
-
-//Get the most accurate location data available//
+        Log.d("track", "requestLocationUpdates");
 
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(this);
-//        final String path = getString(R.string.firebfase_path);
-//        int permission = ContextCompat.checkSelfPermission(this,
-//                Manifest.permission.ACCESS_FINE_LOCATION);
-
-//If the app currently has access to the location permission...//
-
-//        if (permission == PackageManager.PERMISSION_GRANTED) {
-
-//...then request location updates//
 
             client.requestLocationUpdates(request, new LocationCallback() {
-                @Override
-                public void onLocationResult(LocationResult locationResult) {
-                    final Location location = locationResult.getLastLocation();
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                final Location location = locationResult.getLastLocation();
 //Get a reference to the database, so your app can perform read and write operations//
 
-                    final CollectionReference collRef= FirebaseFirestore.getInstance().collection("TrackLocation");
-                    DocumentReference docIdRef = collRef.document(rideID);
-                    docIdRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                requestLocationUpdates();
-                                DocumentSnapshot document = task.getResult();
-                                if (!document.exists()) {
-                                    Map<String, Object> docData = new HashMap<>();
-                                    docData.put("isDriverSharing", true);
-                                    docData.put("latitude", location.getLatitude());
-                                    docData.put("longitude", location.getLongitude());
-//                                    Log.d("update", user_auth.getUid());
-                                    collRef.document(rideID).set(docData)
-                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void aVoid) {
-                                                    Log.d("update", "DocumentSnapshot successfully written!");
-                                                }
-                                            })
-                                            .addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    Log.w("update", "Error writing document", e);
-                                                }
-                                            });
-                                    ;
-                                } else {
-                                    collRef.document(rideID).update("latitude", location.getLatitude());
-                                    collRef.document(rideID).update("longitude", location.getLongitude());
-                                }
-                            } else {
-                                Log.d("update", "Failed with: ", task.getException());
-                            }
-                        }
-                    });
-                }
-            }, null);
-//        }
+                final CollectionReference collRef= FirebaseFirestore.getInstance().collection("TrackLocation");
+                DocumentReference docIdRef = collRef.document(rideID);
+                Log.d("track", "creating for the first time");
+                Map<String, Object> docData = new HashMap<>();
+                docData.put("isDriverSharing", true);
+                docData.put("latitude", location.getLatitude());
+                docData.put("longitude", location.getLongitude());
+                docIdRef.set(docData)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("hakuna", "DocumentSnapshot successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("hakuna", "Error writing document", e);
+                    }
+                });
+
+
+            }
+        }, null);
     }
 }

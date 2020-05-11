@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        Log.d("hakuna", "Token successfully written!");
+                                        Log.d("main", "Token successfully written!");
                                     }
                                 })
                                 .addOnFailureListener(new OnFailureListener() {
@@ -178,29 +178,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
 
-            // Extract data included in the Intent
-            String message = intent.getStringExtra("message");
-            String temp="Upcoming Rides "+"("+ getValue("upcoming_rides",homeActivity)+")";
-            mView_upcoming.setText(temp);
-        }
-    };
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        this.registerReceiver(mMessageReceiver, new IntentFilter("notification"));
-    }
-
-    //Must unregister onPause()
-    @Override
-    protected void onPause() {
-        super.onPause();
-        this.unregisterReceiver(mMessageReceiver);
-    }
 
 
     //This is the handler that will manager to process the broadcast intent
