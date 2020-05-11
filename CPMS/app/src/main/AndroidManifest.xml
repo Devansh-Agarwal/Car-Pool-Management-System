@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
 
     <permission
@@ -59,7 +60,7 @@
         <activity android:name=".HelpActivity" />
 	    <activity android:name=".SosActivity" />
 
-        <service android:name=".MyFirebaseMessagingService">
+        <service android:name=".DriverTrackingActivity">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>

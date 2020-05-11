@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        Log.d("hakuna", "Token successfully written!");
+                                        Log.d("main", "Token successfully written!");
                                     }
                                 })
                                 .addOnFailureListener(new OnFailureListener() {

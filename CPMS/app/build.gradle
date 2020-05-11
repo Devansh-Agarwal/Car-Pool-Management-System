@@ -55,7 +55,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-functions:19.0.2'
 
     implementation 'com.google.maps.android:android-maps-utils:1.2.1'
-
+    androidTestImplementation 'com.android.support.test:rules:1.0.2'
 //    compileSdkVersion 'Google Inc.:Google APIs:24'
 //    implementation 'google.maps.geometry.poly'
 

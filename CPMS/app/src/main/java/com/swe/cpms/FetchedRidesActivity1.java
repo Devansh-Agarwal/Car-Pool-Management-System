@@ -499,7 +499,7 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
     }
 
     //used for polyline
-    private class connectAsyncTask extends AsyncTask<Void, Void, String> {
+    class connectAsyncTask extends AsyncTask<Void, Void, String> {
         private ProgressDialog progressDialog;
         String url;
 
