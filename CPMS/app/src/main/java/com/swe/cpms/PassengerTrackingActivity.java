@@ -18,6 +18,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -38,6 +39,11 @@ public class PassengerTrackingActivity extends FragmentActivity implements OnMap
 
     Handler mHandler;
 
+    MarkerOptions options = new MarkerOptions()
+            .title("Driver is here");
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,7 +62,7 @@ public class PassengerTrackingActivity extends FragmentActivity implements OnMap
 //        while(true)
 //            new PassengerTrackingActivity.connectAsyncTask("dummy").execute();
         mHandler = new Handler();
-        mHandler.postDelayed(callUpdateLoc , 10000);
+        mHandler.postDelayed(callUpdateLoc , 10);
     }
 
     private Runnable callUpdateLoc = new Runnable() {
@@ -64,7 +70,7 @@ public class PassengerTrackingActivity extends FragmentActivity implements OnMap
         public void run() {
 //            Log.d("track", "run");
             updateLoc();
-            mHandler.postDelayed(this, 10000);
+            mHandler.postDelayed(this, 5000);
         }
     };
 
@@ -72,14 +78,7 @@ public class PassengerTrackingActivity extends FragmentActivity implements OnMap
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference colRef = db.collection("TrackLocation");
         DocumentReference docRef = colRef.document(rideID);
-        //        Log.d("track", "function");
-
-        LatLng latLng = new LatLng(20.0646517, 80.2639274);
-
-        mMap.addMarker(new MarkerOptions().position(latLng));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
-
+       
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -94,9 +93,16 @@ public class PassengerTrackingActivity extends FragmentActivity implements OnMap
                         LatLng latLng = new LatLng(lat, lng);
 //                                LatLng latLng = new LatLng(17.0646517, 79.2639274);
 
-                        mMap.addMarker(new MarkerOptions().position(latLng));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+//                        mMap.clear();
+//                        mMap.addMarker(new MarkerOptions().position(latLng));
+//                        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+//                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+//                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 22));
+
+                        mMap.clear();
+                        options.position(latLng);
+                        mMap.addMarker(options);
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 22));
 
                         }
                     }
@@ -108,11 +114,11 @@ public class PassengerTrackingActivity extends FragmentActivity implements OnMap
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(17,78), 18));
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+//        LatLng sydney = new LatLng(-34, 151);
+//        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
     }
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
