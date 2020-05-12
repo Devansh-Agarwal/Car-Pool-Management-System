@@ -30,7 +30,7 @@ public class VerifyPhoneTest {
     @Test
     public void onCreate() {
         View view1 = mActivity.findViewById(R.id.relativeLayout);
-        View view2 = mActivity.findViewById(R.id.v_shape);
+//        View view2 = mActivity.findViewById(R.id.v_shape);
         View view3 = mActivity.findViewById(R.id.imageView);
         View view4 = mActivity.findViewById(R.id.container);
         View view5 = mActivity.findViewById(R.id.textView);
@@ -38,7 +38,7 @@ public class VerifyPhoneTest {
         View view7 = mActivity.findViewById(R.id.editTextCode);
         View view8 = mActivity.findViewById(R.id.buttonSignIn);
         assertNotNull(view1);
-        assertNotNull(view2);
+//        assertNotNull(view2);
         assertNotNull(view3);
         assertNotNull(view4);
         assertNotNull(view5);
@@ -50,7 +50,7 @@ public class VerifyPhoneTest {
     @Test
     public void onResume() {
         View view1 = mActivity.findViewById(R.id.relativeLayout);
-        View view2 = mActivity.findViewById(R.id.v_shape);
+//        View view2 = mActivity.findViewById(R.id.v_shape);
         View view3 = mActivity.findViewById(R.id.imageView);
         View view4 = mActivity.findViewById(R.id.container);
         View view5 = mActivity.findViewById(R.id.textView);
@@ -58,7 +58,7 @@ public class VerifyPhoneTest {
         View view7 = mActivity.findViewById(R.id.editTextCode);
         View view8 = mActivity.findViewById(R.id.buttonSignIn);
         assertNotNull(view1);
-        assertNotNull(view2);
+//        assertNotNull(view2);
         assertNotNull(view3);
         assertNotNull(view4);
         assertNotNull(view5);
@@ -70,7 +70,7 @@ public class VerifyPhoneTest {
     @Test
     public void onPause() {
         View view1 = mActivity.findViewById(R.id.relativeLayout);
-        View view2 = mActivity.findViewById(R.id.v_shape);
+//        View view2 = mActivity.findViewById(R.id.v_shape);
         View view3 = mActivity.findViewById(R.id.imageView);
         View view4 = mActivity.findViewById(R.id.container);
         View view5 = mActivity.findViewById(R.id.textView);
@@ -78,7 +78,7 @@ public class VerifyPhoneTest {
         View view7 = mActivity.findViewById(R.id.editTextCode);
         View view8 = mActivity.findViewById(R.id.buttonSignIn);
         assertNotNull(view1);
-        assertNotNull(view2);
+//        assertNotNull(view2);
         assertNotNull(view3);
         assertNotNull(view4);
         assertNotNull(view5);
