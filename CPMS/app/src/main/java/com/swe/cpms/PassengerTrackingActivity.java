@@ -78,7 +78,7 @@ public class PassengerTrackingActivity extends FragmentActivity implements OnMap
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference colRef = db.collection("TrackLocation");
         DocumentReference docRef = colRef.document(rideID);
-       
+
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {

@@ -473,22 +473,23 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
             long actualTimeDiff = epochDest - epochSrc;
             Log.d("async", Long.toString(epochDest));
             Log.d("async", Long.toString(epochSrc));
-            Log.d("async", Long.toString(actualTimeDiff));
+            Log.d("async actual time diff", Long.toString(actualTimeDiff));
+            Log.d("async real time diff", Double.toString(timeDiff.get(i)));
 
             boolean check1, check2, check3;
             Log.d("async", Double.toString(reqSource.latitude)+" "+Double.toString(reqSource.longitude));
-            check1 = PolyUtil.isLocationOnPath(reqSource, routePoints, true, 50);
+            check1 = PolyUtil.isLocationOnPath(reqSource, routePoints, true, 100);
             Log.d("async", Double.toString(reqDest.latitude)+" "+Double.toString(reqDest.longitude));
-            check2 = PolyUtil.isLocationOnPath(reqDest, routePoints, true, 50);
+            check2 = PolyUtil.isLocationOnPath(reqDest, routePoints, true, 100);
 //                LatLng l = new LatLng(17.06019, 79.28231);
-            check3 = PolyUtil.isLocationOnPath(offSource, routePoints, true, 50) ;
+            check3 = PolyUtil.isLocationOnPath(offSource, routePoints, true, 100) ;
             Log.d("async", Double.toString(offSource.latitude)+" "+Double.toString(offSource.longitude));
 
             if(check1)Log.d("sync", "source lies on route");
             if(check2)Log.d("sync", "dest lies on route");
             if(check3)Log.d("sync", "dont know why");
 
-            if((reqSeats <= offSeats) && (Math.abs(actualTimeDiff - timeDiff.get(i)))<=300 && check1 && check2){
+            if((reqSeats <= offSeats) && (Math.abs(actualTimeDiff - timeDiff.get(i)))<=1500 && check1 && check2){
                 Log.d("async", "matched");
                 return true;
             }
