@@ -85,7 +85,7 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
 
     final FirebaseUser user_auth = FirebaseAuth.getInstance().getCurrentUser();
 
-    ArrayList<Double> timeDiff;
+    ArrayList<Double> timeDiff, timeDiffDest;
     Polyline polyline;
     List <LatLng> routePoints;
 
@@ -141,7 +141,9 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
                     }
 
                     String destinationUrl = Double.toString(reqSource.latitude)+","+Double.toString(reqSource.longitude);
+                    destinationUrl += "|" + Double.toString(reqDest.latitude)+","+Double.toString(reqDest.longitude);
                     String url="https://maps.googleapis.com/maps/api/distancematrix/json?origins="+origins+"&destinations="+destinationUrl+"&key="+getString(R.string.google_api_key);
+                    Log.d("imp",url);
                     new FetchedRidesActivity1.connectAsyncTask(url).execute();
                 }
             }
@@ -475,7 +477,7 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
             Log.d("async", Long.toString(epochSrc));
             Log.d("async actual time diff", Long.toString(actualTimeDiff));
             Log.d("async real time diff", Double.toString(timeDiff.get(i)));
-
+            Log.d("async diff dest", Double.toString(timeDiffDest.get(i)));
             boolean check1, check2, check3;
             Log.d("async", Double.toString(reqSource.latitude)+" "+Double.toString(reqSource.longitude));
             check1 = PolyUtil.isLocationOnPath(reqSource, routePoints, true, 100);
@@ -489,7 +491,7 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
             if(check2)Log.d("sync", "dest lies on route");
             if(check3)Log.d("sync", "dont know why");
 
-            if((reqSeats <= offSeats) && (Math.abs(actualTimeDiff - timeDiff.get(i)))<=1500 && check1 && check2){
+            if((reqSeats <= offSeats) && (Math.abs(actualTimeDiff - timeDiff.get(i)))<=1500 && check1 && check2 && (timeDiff.get(i) < timeDiffDest.get(i))){
                 Log.d("async", "matched");
                 return true;
             }
@@ -620,23 +622,28 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
     private void getTimeAndPath(String result) {
         try {
             timeDiff = new ArrayList();
+            timeDiffDest = new ArrayList();
             // Tranform the string into a json object
             final JSONObject json = new JSONObject(result);
             JSONArray routeArray = json.getJSONArray("rows");
-            for(int i=0;i<reqCount;i++){
+            Log.d("imp", Integer.toString(reqCount));
+
+            for (int i = 0; i < reqCount; i++) {
                 JSONObject row = routeArray.getJSONObject(i);
                 JSONArray elements = row.getJSONArray("elements");
+
                 JSONObject element = elements.getJSONObject(0);
                 JSONObject duration = element.getJSONObject("duration");
                 Double temp = duration.getDouble("value");
+                Log.d("imp", Double.toString(temp));
                 timeDiff.add(temp);
-            }
 
-//            JSONObject overviewPolylines = routes
-//                    .getJSONObject("overview_polyline");
-//
-//            String encodedString = overviewPolylines.getString("points");
-//            routePoints = decodePoly(encodedString);
+                JSONObject elementDest = elements.getJSONObject(1);
+                JSONObject durationDest = elementDest.getJSONObject("duration");
+                Double tempDest = durationDest.getDouble("value");
+                Log.d("imp", Double.toString(tempDest));
+                timeDiffDest.add(tempDest);
+            }
         }
         catch (Exception e) {
             e.printStackTrace();
