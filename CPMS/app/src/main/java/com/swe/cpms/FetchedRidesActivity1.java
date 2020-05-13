@@ -298,7 +298,7 @@ public class FetchedRidesActivity1 extends AppCompatActivity {
         context = getApplicationContext();
 //        String fare = bundle.getString("fare");
         double approxDistance = getApproxDistance(reqSource.latitude, reqSource.longitude, reqDest.latitude, reqDest.longitude, 'k');
-        double fare = 0.25 * 4 * reqSeats * approxDistance;
+        double fare = 0.25 * 8 * reqSeats * approxDistance;
         DecimalFormat df = new DecimalFormat("#.##");
         fare = Double.valueOf(df.format(fare));
         TextView mFare = (TextView)findViewById(R.id.fare);
